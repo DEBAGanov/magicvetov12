@@ -1,5 +1,3 @@
-version: "3.8"
-
 # Production версия для Timeweb Cloud с заполненными боевыми данными
 services:
   app:
