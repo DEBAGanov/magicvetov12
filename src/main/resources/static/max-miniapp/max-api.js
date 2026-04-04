@@ -10,7 +10,7 @@
 class MaxPizzaAPI {
     constructor() {
         // API base URL
-        this.baseURL = 'https://api.dimbopizza.ru';
+        this.baseURL = 'https://api.magiacvetov12.ru';
         this.apiPath = '/api/v1';
 
         // Auth token
