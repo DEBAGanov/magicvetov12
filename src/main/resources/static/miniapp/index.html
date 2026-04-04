@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MagicCvetov - Заказ пиццы</title>
+    
+    <!-- Telegram WebApp API (локальная версия 7.7) -->
+    <script src="telegram-web-app.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- App Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/icons/favicon-32x32.png">
+    
+    <!-- Meta for Telegram -->
+    <meta name="telegram-bot-username" content="DIMBOpizzaBot">
+    <meta name="theme-color" content="#1a1a1a">
+    
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103585127', 'ym');
+
+        ym(103585127, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103585127" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    
+    <!-- VK Pixel (Top.Mail.Ru counter) -->
+    <script type="text/javascript">
+        var _tmr = window._tmr || (window._tmr = []);
+        _tmr.push({id: "3695469", type: "pageView", start: (new Date()).getTime()});
+        (function (d, w, id) {
+          if (d.getElementById(id)) return;
+          var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
+          ts.src = "https://top-fwz1.mail.ru/js/code.js";
+          var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
+          if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
+        })(document, window, "tmr-code");
+    </script>
+    <noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3695469;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
+    <!-- /VK Pixel (Top.Mail.Ru counter) -->
+</head>
+<body class="telegram-theme">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Загрузка...</div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="brand-logo">
+                    <img src="/static/images/icons/favicon-32x32.png" alt="DIMBO Pizza" class="brand-icon">
+                    <span class="brand-name">DIMBO Pizza</span>
+                </div>
+                <div class="cart-button" id="cart-button">
+                    <span class="cart-icon">🛒</span>
+                    <span class="cart-count" id="cart-count">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Categories -->
+            <section class="categories-section" id="categories-section">
+                <h2 class="section-title">Меню</h2>
+                <div class="categories-grid" id="categories-grid">
+                    <!-- Categories will be loaded here -->
+                </div>
+                <!-- Link to full menu -->
+                <div class="menu-link-section">
+                    <a href="menu.html" class="menu-link-button" id="menu-link-button">
+                        📋 Посмотреть все товары (/menu)
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <!-- Cart -->
+        <div class="cart-overlay" id="cart-overlay" style="display: none;">
+            <div class="cart-container">
+                <div class="cart-header">
+                    <h3>Корзина</h3>
+                    <button class="cart-close" id="cart-close">✕</button>
+                </div>
+                <div class="cart-content" id="cart-content">
+                    <!-- Cart items will be loaded here -->
+                </div>
+                <div class="cart-footer">
+                    <div class="cart-total">
+                        Итого: <span id="cart-total">0 ₽</span>
+                    </div>
+                    <button class="checkout-button" id="checkout-button">
+                        Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="bottom-bar" id="bottom-bar" style="display: none;">
+            <div class="bottom-bar-content">
+                <div class="total-info">
+                    <span id="bottom-total">0 ₽</span>
+                </div>
+                <button class="view-cart-button" id="view-cart-button">
+                    Корзина (<span id="bottom-count">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Screen -->
+    <div id="error-screen" class="error-screen" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <div class="error-message" id="error-message">Произошла ошибка</div>
+        <button class="retry-button" id="retry-button">Повторить</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

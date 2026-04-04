@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Тест Telegram API 7.7</title>
+    
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103585127', 'ym');
+
+        ym(103585127, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103585127" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    
+    <!-- Локальная версия Telegram WebApp API -->
+    <script src="telegram-web-app.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .info-box {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007acc;
+        }
+        .error-box {
+            background: #ffe6e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ff4444;
+        }
+        .success-box {
+            background: #e6ffe6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #44ff44;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005a99;
+        }
+        #log {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Тест Telegram API 7.7</h1>
+    
+    <div class="info-box">
+        <h3>Диагностика API</h3>
+        <p><strong>Версия API:</strong> <span id="api-version">Загрузка...</span></p>
+        <p><strong>Платформа:</strong> <span id="api-platform">Загрузка...</span></p>
+        <p><strong>requestContact доступен:</strong> <span id="request-contact-available">Загрузка...</span></p>
+    </div>
+    
+    <div class="info-box">
+        <h3>Тестирование функций</h3>
+        <button onclick="testRequestContact()">📱 Тест requestContact()</button>
+        <button onclick="testShowAlert()">🔔 Тест showAlert()</button>
+        <button onclick="testShowPopup()">💬 Тест showPopup()</button>
+        <button onclick="clearLog()">🧹 Очистить лог</button>
+    </div>
+    
+    <div class="info-box">
+        <h3>Лог событий</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        let tg = window.Telegram?.WebApp;
+        
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        function updateDiagnostics() {
+            if (tg) {
+                document.getElementById('api-version').textContent = tg.version || 'Неизвестно';
+                document.getElementById('api-platform').textContent = tg.platform || 'Неизвестно';
+                document.getElementById('request-contact-available').textContent = 
+                    typeof tg.requestContact === 'function' ? '✅ Да' : '❌ Нет';
+                
+                log(`🔍 Telegram API инициализирован`);
+                log(`📊 Версия: ${tg.version}`);
+                log(`📱 Платформа: ${tg.platform}`);
+                log(`📞 requestContact: ${typeof tg.requestContact}`);
+                log(`📧 requestWriteAccess: ${typeof tg.requestWriteAccess}`);
+                log(`🔔 showAlert: ${typeof tg.showAlert}`);
+                log(`💬 showPopup: ${typeof tg.showPopup}`);
+                
+                // Подписываемся на события
+                tg.onEvent('contactRequested', (data) => {
+                    log(`📞 СОБЫТИЕ contactRequested: ${JSON.stringify(data)}`);
+                });
+                
+                tg.onEvent('writeAccessRequested', (data) => {
+                    log(`✍️ СОБЫТИЕ writeAccessRequested: ${JSON.stringify(data)}`);
+                });
+                
+            } else {
+                document.getElementById('api-version').textContent = 'API недоступен';
+                document.getElementById('api-platform').textContent = 'API недоступен';
+                document.getElementById('request-contact-available').textContent = '❌ API недоступен';
+                log('❌ Telegram API недоступен');
+            }
+        }
+        
+        function testRequestContact() {
+            log('🚀 Тестируем requestContact()...');
+            
+            if (!tg) {
+                log('❌ Telegram API недоступен');
+                return;
+            }
+            
+            if (typeof tg.requestContact !== 'function') {
+                log('❌ requestContact не является функцией');
+                return;
+            }
+            
+            try {
+                tg.requestContact();
+                log('✅ requestContact() вызван без ошибок');
+                log('⏱️ Ожидание события contactRequested...');
+                
+                // Таймаут для теста
+                setTimeout(() => {
+                    log('⏰ Таймаут 10 секунд истек');
+                }, 10000);
+                
+            } catch (error) {
+                log(`❌ Ошибка при вызове requestContact: ${error.message}`);
+            }
+        }
+        
+        function testShowAlert() {
+            log('🚀 Тестируем showAlert()...');
+            
+            if (!tg || typeof tg.showAlert !== 'function') {
+                log('❌ showAlert недоступен');
+                return;
+            }
+            
+            try {
+                tg.showAlert('Тест showAlert() успешен!');
+                log('✅ showAlert() вызван без ошибок');
+            } catch (error) {
+                log(`❌ Ошибка при вызове showAlert: ${error.message}`);
+            }
+        }
+        
+        function testShowPopup() {
+            log('🚀 Тестируем showPopup()...');
+            
+            if (!tg || typeof tg.showPopup !== 'function') {
+                log('❌ showPopup недоступен');
+                return;
+            }
+            
+            try {
+                tg.showPopup({
+                    title: 'Тест Popup',
+                    message: 'Это тест функции showPopup()',
+                    buttons: [
+                        { type: 'ok', text: 'OK' },
+                        { type: 'cancel', text: 'Отмена' }
+                    ]
+                }, (button) => {
+                    log(`✅ showPopup ответ: ${button}`);
+                });
+                log('✅ showPopup() вызван без ошибок');
+            } catch (error) {
+                log(`❌ Ошибка при вызове showPopup: ${error.message}`);
+            }
+        }
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            log('📄 Страница загружена');
+            
+            if (tg) {
+                tg.ready();
+                tg.expand();
+                log('🚀 Telegram WebApp готов');
+            }
+            
+            updateDiagnostics();
+        });
+        
+        // Глобальные обработчики ошибок
+        window.addEventListener('error', (e) => {
+            log(`🚨 JavaScript ошибка: ${e.message} в ${e.filename}:${e.lineno}`);
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            log(`🚨 Promise ошибка: ${e.reason}`);
+        });
+    </script>
+</body>
+</html>

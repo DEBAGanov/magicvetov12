@@ -1,0 +1,138 @@
+spring:
+  profiles:
+    active: dev
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+s3:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: magicvetov
+  public-url: http://localhost
+
+---
+# Dev профиль
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/magicvetov
+    username: magicvetov
+    password: magicvetov_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+
+# Telegram Bot настройки для dev
+telegram:
+  enabled: ${TELEGRAM_ENABLED:true}
+  bot-token: ${TELEGRAM_AUTH_BOT_TOKEN:}
+  # Включаем Long Polling бот для dev
+  longpolling:
+    enabled: ${TELEGRAM_LONGPOLLING_ENABLED:true}
+  # Конфигурация основного Long Polling бота для dev
+  bot:
+    enabled: ${TELEGRAM_BOT_ENABLED:true}
+    token: ${TELEGRAM_BOT_TOKEN:}
+    username: ${TELEGRAM_BOT_USERNAME:MagicCvetovBot}
+  # Конфигурация админского бота для dev
+  admin-bot:
+    enabled: ${TELEGRAM_ADMIN_BOT_ENABLED:true}
+    token: ${TELEGRAM_ADMIN_BOT_TOKEN:}
+    username: ${TELEGRAM_ADMIN_BOT_USERNAME:MagicCvetovOrders_bot}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  # Отключаем Redis для prod
+  cache:
+    type: simple
+  data:
+    redis:
+      repositories:
+        enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+  datasource:
+    # Эти значения перезаписываются переменными окружения в продакшене
+    url: jdbc:postgresql://localhost:5432/magicvetov
+    username: magicvetov
+    password: magicvetov_password
+    driver-class-name: org.postgresql.Driver
+
+timeweb:
+  s3:
+    endpoint: https://s3.twcstorage.ru
+    access-key: ${TIMEWEB_S3_ACCESS_KEY:AJK63DSBOEBQD3IVTLOT}
+    secret-key: ${TIMEWEB_S3_SECRET_KEY:eOkZ8nzUkylhcsgPRQVJdr8qmvblxvaq7zoEcNpk}
+    bucket: f9c8e17a-magicvetov-products
+    public-url: https://s3.twcstorage.ru/f9c8e17a-magicvetov-products
+
+# Telegram Bot API настройки
+telegram:
+  enabled: ${TELEGRAM_ENABLED:true}
+  bot-token: ${TELEGRAM_BOT_TOKEN:}
+  chat-id: ${TELEGRAM_CHAT_ID:}
+  api-url: ${TELEGRAM_API_URL:https://api.telegram.org/bot}
+  # Включаем Long Polling бот
+  longpolling:
+    enabled: ${TELEGRAM_LONGPOLLING_ENABLED:true}
+  # Конфигурация основного Long Polling бота
+  bot:
+    enabled: ${TELEGRAM_BOT_ENABLED:true}
+    token: ${TELEGRAM_BOT_TOKEN:}
+    username: ${TELEGRAM_BOT_USERNAME:MagicCvetovBot}
+  # Конфигурация админского бота
+  admin-bot:
+    enabled: ${TELEGRAM_ADMIN_BOT_ENABLED:true}
+    token: ${TELEGRAM_ADMIN_BOT_TOKEN:}
+    username: ${TELEGRAM_ADMIN_BOT_USERNAME:MagicCvetovOrders_bot}
+    max-retries: ${TELEGRAM_ADMIN_BOT_MAX_RETRIES:3}
+    timeout-seconds: ${TELEGRAM_ADMIN_BOT_TIMEOUT_SECONDS:30}
+
+# MAX Bot API настройки (мессенджер MAX - российский аналог Telegram)
+# Документация: https://dev.max.ru/docs/webapps/introduction
+max:
+  bot:
+    enabled: ${MAX_BOT_ENABLED:true}
+    # Пользовательский бот ДИМБО: https://max.ru/id121603899498_bot
+    user-bot-token: ${MAX_BOT_USER_BOT_TOKEN:${MAX_USER_BOT_TOKEN:}}
+    user-bot-username: ${MAX_BOT_USER_BOT_USERNAME:${MAX_USER_BOT_USERNAME:id121603899498_bot}}
+    # Административный бот ДИМБО Админ: https://max.ru/id121603899498_1_bot
+    admin-bot-token: ${MAX_BOT_ADMIN_BOT_TOKEN:${MAX_ADMIN_BOT_TOKEN:}}
+    admin-bot-username: ${MAX_BOT_ADMIN_BOT_USERNAME:${MAX_ADMIN_BOT_USERNAME:id121603899498_1_bot}}
+    # Настройки API
+    api-url: ${MAX_BOT_API_URL:${MAX_API_URL:https://platform-api.max.ru}}
+    # Chat ID для административных уведомлений
+    admin-chat-id: ${MAX_BOT_ADMIN_CHAT_ID:${MAX_ADMIN_CHAT_ID:}}
+    # Webhook URL для Admin Bot (обязательно для получения событий)
+    # Пример: https://api.magicvetov.ru/max-admin/
+    admin-webhook-url: ${MAX_BOT_ADMIN_WEBHOOK_URL:${MAX_ADMIN_WEBHOOK_URL:}}
+    # Таймауты и повторные попытки
+    timeout: ${MAX_BOT_TIMEOUT:30000}
+    max-retries: ${MAX_BOT_MAX_RETRIES:3}
+    # Включить административные уведомления
+    admin-enabled: ${MAX_BOT_ADMIN_ENABLED:${MAX_ADMIN_ENABLED:true}}

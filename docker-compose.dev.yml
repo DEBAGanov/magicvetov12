@@ -1,0 +1,258 @@
+# Docker Compose для разработки
+
+# Версия для локальной разработки на основе продакшн конфигурации
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: magicvetov-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: magicvetov_db
+      POSTGRES_USER: magicvetov_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-strong_password_change_me}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U magicvetov_user -d magicvetov_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - magicvetov-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: magicvetov-minio-dev
+    command: server --console-address ":9001" /data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-accesskey}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-secretkey}
+      - MINIO_SERVER_URL=http://localhost:9000
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - magicvetov-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+    container_name: magicvetov-app-dev
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+    environment:
+      # Spring настройки для разработки
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+
+      # JVM оптимизация для локальной разработки
+      JAVA_OPTS: >-
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=70.0
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+UseG1GC
+        -Djava.security.egd=file:/dev/./urandom
+        -Dspring.jmx.enabled=false
+        -Duser.timezone=Europe/Moscow
+
+      # Временная зона для контейнера
+      TZ: Europe/Moscow
+
+      # Локальная база данных PostgreSQL
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/magicvetov_db
+      SPRING_DATASOURCE_USERNAME: magicvetov_user
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-strong_password_change_me}
+
+      # Пул соединений для разработки
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 5
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 2
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 30000
+      SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: 300000
+      SPRING_DATASOURCE_HIKARI_MAX_LIFETIME: 1200000
+      SPRING_DATASOURCE_HIKARI_LEAK_DETECTION_THRESHOLD: 60000
+
+      # S3 MinIO настройки для разработки
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER:-accesskey}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-secretkey}
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: magicvetov
+      S3_PUBLIC_URL: http://localhost:9000
+
+      # Кэширование (простое для dev)
+      SPRING_CACHE_TYPE: simple
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+      # JWT настройки
+      JWT_SECRET: ${JWT_SECRET:-"YTg1MmViNjM0MWY5MTk4NTk1OWM4YzhjZTRlMjIzMTZmNWI1ODk3YmY3YmI3NjhjNWFmYTU1NDYzY2E3OGVmMg=="}
+
+      # Логирование для разработки (более подробное)
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_BAGANOV: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+      # Actuator для мониторинга
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: when_authorized
+      MANAGEMENT_ENDPOINT_HEALTH_ENABLED: true
+      MANAGEMENT_SERVER_PORT: 8080
+
+      # Spring Boot настройки для разработки
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE: 25
+      SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_INSERTS: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_UPDATES: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_VERSIONED_DATA: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: Europe/Moscow
+
+      # === TELEGRAM НАСТРОЙКИ (РАЗРАБОТКА) ===
+      # Основной пользовательский бот (для авторизации и команд) - ВКЛЮЧЕН для тестирования Mini App
+      TELEGRAM_BOT_ENABLED: ${TELEGRAM_BOT_ENABLED:-true}
+      TELEGRAM_LONGPOLLING_ENABLED: ${TELEGRAM_LONGPOLLING_ENABLED:-true}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-7819187384:AAGJNn0cwfJ7Nsv_N25h75eggEmqmD5WZG4}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-DIMBOpizzaBot}
+
+      # Telegram Auth настройки (для веб-авторизации и Mini App)
+      TELEGRAM_AUTH_ENABLED: ${TELEGRAM_AUTH_ENABLED:-true}
+      TELEGRAM_AUTH_BOT_TOKEN: ${TELEGRAM_AUTH_BOT_TOKEN:-7819187384:AAGJNn0cwfJ7Nsv_N25h75eggEmqmD5WZG4}
+      TELEGRAM_AUTH_BOT_USERNAME: ${TELEGRAM_AUTH_BOT_USERNAME:-DIMBOpizzaBot}
+      TELEGRAM_AUTH_WEBHOOK_URL: ${TELEGRAM_AUTH_WEBHOOK_URL:-http://localhost:8080/api/v1/telegram/webhook}
+      TELEGRAM_AUTH_WEBHOOK_ENABLED: ${TELEGRAM_AUTH_WEBHOOK_ENABLED:-false}
+      TELEGRAM_AUTH_TOKEN_TTL_MINUTES: ${TELEGRAM_AUTH_TOKEN_TTL_MINUTES:-10}
+      TELEGRAM_AUTH_RATE_LIMIT_PER_HOUR: ${TELEGRAM_AUTH_RATE_LIMIT_PER_HOUR:-5}
+
+      # Telegram Gateway настройки
+      TELEGRAM_GATEWAY_ENABLED: ${TELEGRAM_GATEWAY_ENABLED:-false}
+      TELEGRAM_GATEWAY_ACCESS_TOKEN: ${TELEGRAM_GATEWAY_ACCESS_TOKEN:-}
+      TELEGRAM_GATEWAY_MESSAGE_TTL: ${TELEGRAM_GATEWAY_MESSAGE_TTL:-300}
+      TELEGRAM_GATEWAY_CALLBACK_URL: ${TELEGRAM_GATEWAY_CALLBACK_URL:-http://localhost:8080/api/v1/auth/telegram-gateway/callback}
+      TELEGRAM_GATEWAY_TIMEOUT_SECONDS: ${TELEGRAM_GATEWAY_TIMEOUT_SECONDS:-10}
+      TELEGRAM_GATEWAY_MAX_RETRY_ATTEMPTS: ${TELEGRAM_GATEWAY_MAX_RETRY_ATTEMPTS:-3}
+
+      # Exolve SMS API настройки (тестовые для разработки)
+      EXOLVE_API_KEY: ${EXOLVE_API_KEY:-test_api_key}
+      EXOLVE_SENDER_NAME: ${EXOLVE_SENDER_NAME:-+79304410750}
+      EXOLVE_API_URL: ${EXOLVE_API_URL:-https://api.exolve.ru/messaging/v1}
+      EXOLVE_TIMEOUT_SECONDS: 10
+      EXOLVE_RETRY_MAX_ATTEMPTS: 3
+
+      # SMS Settings
+      SMS_CODE_LENGTH: 4
+      SMS_CODE_TTL_MINUTES: 10
+      SMS_RATE_LIMIT_PER_HOUR: 3
+      SMS_MAX_ATTEMPTS: 3
+
+      # ЮKassa настройки (тестовые для разработки)
+      YOOKASSA_ENABLED: ${YOOKASSA_ENABLED:-true}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID:-1127550}
+      YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY:-test_g0tYwSJBL5ahKeMNC2388jdT-3g_VPdJchsNFFJF8o0}
+      YOOKASSA_API_URL: ${YOOKASSA_API_URL:-https://api.yookassa.ru/v3}
+      YOOKASSA_WEBHOOK_URL: ${YOOKASSA_WEBHOOK_URL:-http://localhost:8080/api/v1/payments/yookassa/webhook}
+      YOOKASSA_RETURN_URL: ${YOOKASSA_RETURN_URL:-magicvetov://payment/result}
+      YOOKASSA_TIMEOUT_SECONDS: ${YOOKASSA_TIMEOUT_SECONDS:-30}
+      YOOKASSA_MAX_RETRY_ATTEMPTS: ${YOOKASSA_MAX_RETRY_ATTEMPTS:-3}
+
+      # === МОБИЛЬНЫЙ SDK КЛЮЧ ===
+      YOOKASSA_MOBILE_SDK_KEY: ${YOOKASSA_MOBILE_SDK_KEY:-test_MTExNjE0MTdtMbsnxRGOphBSgVFAOYjWsNpAYjFN9Zg}
+
+      # === ТАЙМАУТЫ И ПОВТОРЫ ===
+      YOOKASSA_CONNECTION_TIMEOUT: ${YOOKASSA_CONNECTION_TIMEOUT:-5000}
+      YOOKASSA_READ_TIMEOUT: ${YOOKASSA_READ_TIMEOUT:-10000}
+      YOOKASSA_WRITE_TIMEOUT: ${YOOKASSA_WRITE_TIMEOUT:-10000}
+      YOOKASSA_RETRY_MAX_ATTEMPTS: ${YOOKASSA_RETRY_MAX_ATTEMPTS:-3}
+      YOOKASSA_RETRY_DELAY: ${YOOKASSA_RETRY_DELAY:-1000}
+
+      # === СБП НАСТРОЙКИ ===
+      SBP_ENABLED: ${SBP_ENABLED:-true}
+      SBP_DEFAULT_RETURN_URL: ${SBP_DEFAULT_RETURN_URL:-magicvetov://payment/result}
+
+      # === МОНИТОРИНГ И МЕТРИКИ ===
+      YOOKASSA_METRICS_ENABLED: ${YOOKASSA_METRICS_ENABLED:-true}
+      YOOKASSA_METRICS_UPDATE_INTERVAL: ${YOOKASSA_METRICS_UPDATE_INTERVAL:-60}
+      YOOKASSA_METRICS_RETENTION_HOURS: ${YOOKASSA_METRICS_RETENTION_HOURS:-24}
+
+      # === АЛЕРТЫ ===
+      YOOKASSA_ALERTS_ENABLED: ${YOOKASSA_ALERTS_ENABLED:-true}
+      YOOKASSA_ALERTS_LOW_CONVERSION: ${YOOKASSA_ALERTS_LOW_CONVERSION:-70.0}
+      YOOKASSA_ALERTS_HIGH_FAILURE: ${YOOKASSA_ALERTS_HIGH_FAILURE:-10.0}
+      YOOKASSA_ALERTS_MAX_PENDING: ${YOOKASSA_ALERTS_MAX_PENDING:-30}
+      YOOKASSA_ALERTS_COOLDOWN: ${YOOKASSA_ALERTS_COOLDOWN:-30}
+      YOOKASSA_ALERTS_MIN_PAYMENTS: ${YOOKASSA_ALERTS_MIN_PAYMENTS:-5}
+
+      # === ЛОГИРОВАНИЕ YOOKASSA ===
+      LOGGING_LEVEL_YOOKASSA: ${LOGGING_LEVEL_YOOKASSA:-DEBUG}
+
+      # Основные Telegram настройки (для уведомлений) - ВКЛЮЧЕНЫ для тестирования
+      TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-true}  
+      TELEGRAM_API_URL: ${TELEGRAM_API_URL:-https://api.telegram.org/bot}
+
+      # Админский Telegram Bot настройки
+      TELEGRAM_ADMIN_BOT_ENABLED: ${TELEGRAM_ADMIN_BOT_ENABLED:-true}
+      TELEGRAM_ADMIN_BOT_TOKEN: ${TELEGRAM_ADMIN_BOT_TOKEN:-8052456616:AAEoAzBfr3jRpylDmxR-azNBSqimthPCHeg}
+      TELEGRAM_ADMIN_BOT_USERNAME: ${TELEGRAM_ADMIN_BOT_USERNAME:-MagicCvetovOrders_bot}
+      TELEGRAM_ADMIN_BOT_MAX_RETRIES: ${TELEGRAM_ADMIN_BOT_MAX_RETRIES:-3}
+      TELEGRAM_ADMIN_BOT_TIMEOUT_SECONDS: ${TELEGRAM_ADMIN_BOT_TIMEOUT_SECONDS:-30}
+
+      # CORS настройки для локальной разработки (включая Telegram Mini App)
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:3000,https://t.me,https://web.telegram.org}
+      CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS:-GET,POST,PUT,DELETE,OPTIONS,PATCH}
+      CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS:-Authorization,Content-Type,X-Requested-With,Accept,Origin,X-Auth-Token,Cache-Control,X-Client-Type,X-Client-Version}
+      CORS_EXPOSED_HEADERS: ${CORS_EXPOSED_HEADERS:-Authorization,Content-Type,X-Total-Count,X-Pagination-Page,X-Pagination-Size}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
+      CORS_MAX_AGE: ${CORS_MAX_AGE:-3600}
+
+      # Google Sheets API настройки для dev
+      GOOGLE_SHEETS_ENABLED: ${GOOGLE_SHEETS_ENABLED:-false}
+      GOOGLE_SHEETS_SPREADSHEET_ID: ${GOOGLE_SHEETS_SPREADSHEET_ID:-1K_g-EGPQgu4aFv4bIPP6yE_raHyUrlr6GYi-MTEJtu4}
+      GOOGLE_SHEETS_SHEET_NAME: ${GOOGLE_SHEETS_SHEET_NAME:-Лист1}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/app/config/google-credentials.json}
+      GOOGLE_SHEETS_APPLICATION_NAME: ${GOOGLE_SHEETS_APPLICATION_NAME:-MagicCvetov Order Tracker}
+      GOOGLE_SHEETS_CONNECT_TIMEOUT: ${GOOGLE_SHEETS_CONNECT_TIMEOUT:-10000}
+      GOOGLE_SHEETS_READ_TIMEOUT: ${GOOGLE_SHEETS_READ_TIMEOUT:-30000}
+      GOOGLE_SHEETS_MAX_RETRY_ATTEMPTS: ${GOOGLE_SHEETS_MAX_RETRY_ATTEMPTS:-3}
+      GOOGLE_SHEETS_RETRY_DELAY: ${GOOGLE_SHEETS_RETRY_DELAY:-1000}
+      GOOGLE_SHEETS_DOWNLOAD_FROM_S3: ${GOOGLE_SHEETS_DOWNLOAD_FROM_S3:-false}
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    networks:
+      - magicvetov-network
+
+networks:
+  magicvetov-network:
+    name: magicvetov-network-dev
+
+volumes:
+  postgres-data:
+    name: magicvetov-postgres-data-dev
+  minio-data:
+    name: magicvetov-minio-data-dev

@@ -1,0 +1,225 @@
+version: "3.8"
+
+# Production версия для Timeweb Cloud с заполненными боевыми данными
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+    container_name: magicvetov-app
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+    environment:
+      # Spring настройки
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8080
+
+      # JVM оптимизация для Timeweb Cloud
+      JAVA_OPTS: >-
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=70.0
+        -XX:+ExitOnOutOfMemoryError
+        -XX:+UseG1GC
+        -Djava.security.egd=file:/dev/./urandom
+        -Dspring.jmx.enabled=false
+        -Duser.timezone=Europe/Moscow
+
+      # Временная зона для контейнера
+      TZ: Europe/Moscow
+
+      # База данных Timeweb (УСТАНОВИТЕ РЕАЛЬНЫЙ ПАРОЛЬ!)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://45.10.41.59:5432/magiacvetov12
+      SPRING_DATASOURCE_USERNAME: magiacvetov12
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-bv12345!}
+
+      # Пул соединений оптимизированный для облака
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 8
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 2
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 30000
+      SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: 300000
+      SPRING_DATASOURCE_HIKARI_MAX_LIFETIME: 1200000
+      SPRING_DATASOURCE_HIKARI_LEAK_DETECTION_THRESHOLD: 60000
+
+      # S3 Timeweb настройки
+      TIMEWEB_S3_ACCESS_KEY: AJK63DSBOEBQD3IVTLOT
+      TIMEWEB_S3_SECRET_KEY: eOkZ8nzUkylhcsgPRQVJdr8qmvblxvaq7zoEcNpk
+      TIMEWEB_S3_ENDPOINT: https://s3.twcstorage.ru
+      TIMEWEB_S3_BUCKET: f9c8e17a-magicvetov-products
+      TIMEWEB_S3_PUBLIC_URL: https://s3.twcstorage.ru/f9c8e17a-magicvetov-products
+
+      # Кэширование (simple для prod без Redis)
+      SPRING_CACHE_TYPE: simple
+
+      # JWT настройки
+      JWT_SECRET: "YTg1MmViNjM0MWY5MTk4NTk1OWM4YzhjZTRlMjIzMTZmNWI1ODk3YmY3YmI3NjhjNWFmYTU1NDYzY2E3OGVmMg=="
+
+      # Логирование оптимизированное для production
+      LOGGING_LEVEL_ROOT: WARN
+      LOGGING_LEVEL_COM_BAGANOV: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: WARN
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: WARN
+      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+      # Actuator для мониторинга
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
+      MANAGEMENT_ENDPOINT_HEALTH_ENABLED: true
+      MANAGEMENT_SERVER_PORT: 8080
+
+      # Spring Boot оптимизации
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: false
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE: 25
+      SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_INSERTS: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_UPDATES: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_VERSIONED_DATA: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: Europe/Moscow
+
+      # Telegram Gateway настройки
+      TELEGRAM_GATEWAY_ENABLED: true
+      TELEGRAM_GATEWAY_ACCESS_TOKEN: AAGCGwAAIlEzNcCeEbrV5r-w65s_0edegXThOhJ2nq-eBw
+      TELEGRAM_GATEWAY_MESSAGE_TTL: 300
+      TELEGRAM_GATEWAY_CALLBACK_URL: https://debaganov-magicvetov-0177.twc1.net/api/v1/auth/telegram-gateway/callback
+      TELEGRAM_GATEWAY_TIMEOUT_SECONDS: 10
+      TELEGRAM_GATEWAY_MAX_RETRY_ATTEMPTS: 3
+
+      # Telegram Auth настройки - ОТКЛЮЧЕНЫ для полного перехода на Long Polling
+      TELEGRAM_AUTH_ENABLED: ${TELEGRAM_AUTH_ENABLED:-false}
+      TELEGRAM_AUTH_BOT_TOKEN: ${TELEGRAM_AUTH_BOT_TOKEN:-7819187384:AAGJNn0cwfJ7Nsv_N25h75eggEmqmD5WZG4}
+      TELEGRAM_AUTH_BOT_USERNAME: ${TELEGRAM_AUTH_BOT_USERNAME:-DIMBOpizzaBot}
+      TELEGRAM_AUTH_WEBHOOK_URL: ${TELEGRAM_AUTH_WEBHOOK_URL:-https://debaganov-magicvetov-0177.twc1.net/api/v1/telegram/webhook}
+      TELEGRAM_AUTH_WEBHOOK_ENABLED: ${TELEGRAM_AUTH_WEBHOOK_ENABLED:-false}
+      TELEGRAM_AUTH_TOKEN_TTL_MINUTES: ${TELEGRAM_AUTH_TOKEN_TTL_MINUTES:-10}
+      TELEGRAM_AUTH_RATE_LIMIT_PER_HOUR: ${TELEGRAM_AUTH_RATE_LIMIT_PER_HOUR:-5}
+
+      # Exolve SMS API настройки
+      EXOLVE_API_KEY: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJRV05sMENiTXY1SHZSV29CVUpkWjVNQURXSFVDS0NWODRlNGMzbEQtVHA0In0.eyJleHAiOjIwNjU1MTM0MTMsImlhdCI6MTc1MDE1MzQxMywianRpIjoiMzIyNDBhZTAtNzU2Ni00NDhkLWEzZGUtYjFjZDBjODlkNTU0IiwiaXNzIjoiaHR0cHM6Ly9zc28uZXhvbHZlLnJ1L3JlYWxtcy9FeG9sdmUiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiZDZkYjE4ZDEtOWRhNS00NjRmLWI0ODYtMjI5NGQzMDk2ODI5IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiY2IxNGFjMTQtODU4OS00MjkzLWJkZjktNGE3M2VkYTRmMzQxIiwic2Vzc2lvbl9zdGF0ZSI6ImUzM2EwYzY1LWFkYTctNGU1My1iYmRmLTQzNDJhNTk0OTE1OCIsImFjciI6IjEiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1leG9sdmUiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJleG9sdmVfYXBwIHByb2ZpbGUgZW1haWwiLCJzaWQiOiJlMzNhMGM2NS1hZGE3LTRlNTMtYmJkZi00MzQyYTU5NDkxNTgiLCJ1c2VyX3V1aWQiOiI4NDY2MzRkNy0zYTNlLTRiMzMtODdkNy01MDgzZGRlNmYxOWIiLCJjbGllbnRJZCI6ImNiMTRhYzE0LTg1ODktNDI5My1iZGY5LTRhNzNlZGE0ZjM0MSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiY2xpZW50SG9zdCI6IjE3Mi4xNi4xNjEuMTkiLCJhcGlfa2V5Ijp0cnVlLCJhcGlmb25pY2Ffc2lkIjoiY2IxNGFjMTQtODU4OS00MjkzLWJkZjktNGE3M2VkYTRmMzQxIiwiYmlsbGluZ19udW1iZXIiOiIxMzMyNTgzIiwiYXBpZm9uaWNhX3Rva2VuIjoiYXV0ZDJlYTgxNGItMWM4Zi00ODRkLWE0MjgtMjY5YTZjOWM2NmY2IiwicHJlZmVycmVkX3VzZXJuYW1lIjoic2VydmljZS1hY2NvdW50LWNiMTRhYzE0LTg1ODktNDI5My1iZGY5LTRhNzNlZGE0ZjM0MSIsImN1c3RvbWVyX2lkIjoiMTM1ODk5IiwiY2xpZW50QWRkcmVzcyI6IjE3Mi4xNi4xNjEuMTkifQ.AFj1waE8M77SL26g9poSbRYEWeiV9Wy2ZonUnI4JJDF4uBP1D90YjTUOayHCPRbryBp6gU-cszAndQMlQsT5JLNhs88X7uo08XTY52Q9ghfdpEH22uG5AFxtWTr5450TfgLyl38goA76Xpd88xu3SHUJFEaScSGUjLaoZ1TKmvDnzdG1ZExtiARhUNRQ0eqlfkkfmYDiq_injddMk1Qub6TfC4zH4O2C0o4rUr9hIruXZe9ciKZAzZ_2hdys52vV8dN99OY5ghVRyysPAo05lScPDDMEpT2F6BwfZEQSH8r7WqOU3acxSI64gqmOFTczGZlsE7o09b_NlehqXIuHDg
+      EXOLVE_SENDER_NAME: +79304410750
+      EXOLVE_API_URL: https://api.exolve.ru/messaging/v1
+      EXOLVE_TIMEOUT_SECONDS: 10
+      EXOLVE_RETRY_MAX_ATTEMPTS: 3
+
+      # SMS Settings
+      SMS_CODE_LENGTH: 4
+      SMS_CODE_TTL_MINUTES: 10
+      SMS_RATE_LIMIT_PER_HOUR: 3
+      SMS_MAX_ATTEMPTS: 3
+
+      # ЮKassa настройки
+      YOOKASSA_ENABLED: ${YOOKASSA_ENABLED:-true}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID:-1127550}
+      YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY:-test_g0tYwSJBL5ahKeMNC2388jdT-3g_VPdJchsNFFJF8o0}
+      YOOKASSA_API_URL: ${YOOKASSA_API_URL:-https://api.yookassa.ru/v3}
+      #YOOKASSA_WEBHOOK_URL: ${YOOKASSA_WEBHOOK_URL:-http://api.magicvetov.ru/api/v1/payments/yookassa/webhook}
+      YOOKASSA_WEBHOOK_URL: ${YOOKASSA_WEBHOOK_URL:-http://api.dimbopizza.ru/api/v1/payments/yookassa/webhook}
+      YOOKASSA_RETURN_URL: ${YOOKASSA_RETURN_URL:-magicvetov://payment/result}
+      YOOKASSA_TIMEOUT_SECONDS: ${YOOKASSA_TIMEOUT_SECONDS:-30}
+      YOOKASSA_MAX_RETRY_ATTEMPTS: ${YOOKASSA_MAX_RETRY_ATTEMPTS:-3}
+
+      # === МОБИЛЬНЫЙ SDK КЛЮЧ ===
+      YOOKASSA_MOBILE_SDK_KEY: ${YOOKASSA_MOBILE_SDK_KEY:-test_MTExNjE0MTdtMbsnxRGOphBSgVFAOYjWsNpAYjFN9Zg}
+
+      # === ТАЙМАУТЫ И ПОВТОРЫ ===
+      YOOKASSA_CONNECTION_TIMEOUT: ${YOOKASSA_CONNECTION_TIMEOUT:-5000}
+      YOOKASSA_READ_TIMEOUT: ${YOOKASSA_READ_TIMEOUT:-10000}
+      YOOKASSA_WRITE_TIMEOUT: ${YOOKASSA_WRITE_TIMEOUT:-10000}
+      YOOKASSA_RETRY_MAX_ATTEMPTS: ${YOOKASSA_RETRY_MAX_ATTEMPTS:-3}
+      YOOKASSA_RETRY_DELAY: ${YOOKASSA_RETRY_DELAY:-1000}
+
+      # === СБП НАСТРОЙКИ ===
+      SBP_ENABLED: ${SBP_ENABLED:-true}
+      SBP_DEFAULT_RETURN_URL: ${SBP_DEFAULT_RETURN_URL:-magicvetov://payment/result}
+
+      # === МОНИТОРИНГ И МЕТРИКИ ===
+      YOOKASSA_METRICS_ENABLED: ${YOOKASSA_METRICS_ENABLED:-true}
+      YOOKASSA_METRICS_UPDATE_INTERVAL: ${YOOKASSA_METRICS_UPDATE_INTERVAL:-60}
+      YOOKASSA_METRICS_RETENTION_HOURS: ${YOOKASSA_METRICS_RETENTION_HOURS:-24}
+
+      # === АЛЕРТЫ ===
+      YOOKASSA_ALERTS_ENABLED: ${YOOKASSA_ALERTS_ENABLED:-true}
+      YOOKASSA_ALERTS_LOW_CONVERSION: ${YOOKASSA_ALERTS_LOW_CONVERSION:-70.0}
+      YOOKASSA_ALERTS_HIGH_FAILURE: ${YOOKASSA_ALERTS_HIGH_FAILURE:-10.0}
+      YOOKASSA_ALERTS_MAX_PENDING: ${YOOKASSA_ALERTS_MAX_PENDING:-30}
+      YOOKASSA_ALERTS_COOLDOWN: ${YOOKASSA_ALERTS_COOLDOWN:-30}
+      YOOKASSA_ALERTS_MIN_PAYMENTS: ${YOOKASSA_ALERTS_MIN_PAYMENTS:-5}
+
+      # === ЛОГИРОВАНИЕ ===
+      LOGGING_LEVEL_YOOKASSA: ${LOGGING_LEVEL_YOOKASSA:-DEBUG}
+
+      # Telegram Bot настройки (основные уведомления) - ИСПОЛЬЗУЕМ TELEGRAM_AUTH_BOT_TOKEN
+      TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-true}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-7819187384:AAGJNHKJHJKn0cwfJ7Nsv_N25h75eggEmqmD5WZG4}
+      TELEGRAM_API_URL: https://api.telegram.org/bot
+
+      # Telegram Long Polling настройки (команды бота) - ВКЛЮЧЕНЫ для авторизации и уведомлений
+      TELEGRAM_LONGPOLLING_ENABLED: ${TELEGRAM_LONGPOLLING_ENABLED:-true}
+      TELEGRAM_BOT_ENABLED: ${TELEGRAM_BOT_ENABLED:-true}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-DIMBOpizzaBot}
+
+      # Админский Telegram Bot настройки - ВКЛЮЧЕН для административных уведомлений
+      TELEGRAM_ADMIN_BOT_ENABLED: ${TELEGRAM_ADMIN_BOT_ENABLED:-true}
+      TELEGRAM_ADMIN_BOT_TOKEN: ${TELEGRAM_ADMIN_BOT_TOKEN:-8052456616:AAEoAzBfr3jRpylDmxR-azNBSqimthPCHeg}
+      TELEGRAM_ADMIN_BOT_USERNAME: ${TELEGRAM_ADMIN_BOT_USERNAME:-MagicCvetovOrders_bot}
+      TELEGRAM_ADMIN_BOT_MAX_RETRIES: 3
+      TELEGRAM_ADMIN_BOT_TIMEOUT_SECONDS: 30
+
+      # MAX Bot API настройки (мессенджер MAX - российский аналог Telegram)
+      # Документация: https://dev.max.ru/docs/webapps/introduction
+      MAX_BOT_ENABLED: ${MAX_BOT_ENABLED:-true}
+      # Пользовательский бот ДИМБО: https://max.ru/id121603899498_bot
+      MAX_BOT_USER_BOT_TOKEN: ${MAX_BOT_USER_BOT_TOKEN:-f9LHodD0cOKMx3YM-LVjPl5fvgW1zrL3Gd8TB0et9Z4AXB1_v0jkTV26MDMTeGZ6sj4TZnOJOif8p7jDxwmZ}
+      MAX_BOT_USER_BOT_USERNAME: ${MAX_BOT_USER_BOT_USERNAME:-id121603899498_bot}
+      # Административный бот ДИМБО Админ: https://max.ru/id121603899498_1_bot
+      MAX_BOT_ADMIN_BOT_TOKEN: ${MAX_BOT_ADMIN_BOT_TOKEN:-f9LHodD0cOKGjBhKOiTerO4tix7cID248uek0EkbqWEbEUALnKMRZMRw8XiZheOVmhVGFW_P6Ge9XMi5Lxph}
+      MAX_BOT_ADMIN_BOT_USERNAME: ${MAX_BOT_ADMIN_BOT_USERNAME:-id121603899498_1_bot}
+      # Настройки API
+      MAX_BOT_API_URL: ${MAX_BOT_API_URL:-https://platform-api.max.ru}
+      # Chat ID для административных уведомлений
+      MAX_BOT_ADMIN_CHAT_ID: ${MAX_BOT_ADMIN_CHAT_ID:-213154550}
+      # Webhook URL для Admin Bot - MAX API будет отправлять события на этот URL
+      MAX_BOT_ADMIN_WEBHOOK_URL: ${MAX_BOT_ADMIN_WEBHOOK_URL:-https://api.dimbopizza.ru/max-admin/}
+      # Таймауты и повторные попытки
+      MAX_BOT_TIMEOUT: ${MAX_BOT_TIMEOUT:-30000}
+      MAX_BOT_MAX_RETRIES: ${MAX_BOT_MAX_RETRIES:-3}
+      # Включить административные уведомления
+      MAX_BOT_ADMIN_ENABLED: ${MAX_BOT_ADMIN_ENABLED:-true}
+
+      # CORS настройки для поддержки фронтенда
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://magicvetov12.ru,https://www.magicvetov12.ru,https://api.magicvetov.ru,http://localhost:5173,http://localhost:3000,http://localhost:8080,https://api.dimbopizza.ru,https://dimbopizza.ru,https://dimbopizza.ru/*,https://t.me/DIMBOpizzaBot/*,https://web.telegram.org/k/#@DIMBOpizzaBot,https://max.ru,https://m.max.ru,https://web.max.ru,https://app.max.ru}
+      CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS:-GET,POST,PUT,DELETE,OPTIONS,PATCH}
+      CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS:-Authorization,Content-Type,X-Requested-With,Accept,Origin,X-Auth-Token,Cache-Control,X-Client-Type,X-Client-Version,X-Session-Id}
+      CORS_EXPOSED_HEADERS: ${CORS_EXPOSED_HEADERS:-Authorization,Content-Type,X-Total-Count,X-Pagination-Page,X-Pagination-Size}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
+      CORS_MAX_AGE: ${CORS_MAX_AGE:-3600}
+
+      # Google Sheets API настройки
+      GOOGLE_SHEETS_ENABLED: ${GOOGLE_SHEETS_ENABLED:-true}
+      GOOGLE_SHEETS_SPREADSHEET_ID: ${GOOGLE_SHEETS_SPREADSHEET_ID:-1K_g-EGPQgu4aFv4bIPP6yE_raHyUrlr6GYi-MTEJtu4}
+      GOOGLE_SHEETS_SHEET_NAME: ${GOOGLE_SHEETS_SHEET_NAME:-Лист1}
+      GOOGLE_SHEETS_CREDENTIALS_PATH: ${GOOGLE_SHEETS_CREDENTIALS_PATH:-/tmp/google-credentials.json}
+      GOOGLE_SHEETS_CREDENTIALS_S3_KEY: ${GOOGLE_SHEETS_CREDENTIALS_S3_KEY:-google-credentials.json}
+      GOOGLE_SHEETS_APPLICATION_NAME: ${GOOGLE_SHEETS_APPLICATION_NAME:-MagicCvetov Order Tracker}
+      GOOGLE_SHEETS_CONNECT_TIMEOUT: ${GOOGLE_SHEETS_CONNECT_TIMEOUT:-10000}
+      GOOGLE_SHEETS_READ_TIMEOUT: ${GOOGLE_SHEETS_READ_TIMEOUT:-30000}
+      GOOGLE_SHEETS_MAX_RETRY_ATTEMPTS: ${GOOGLE_SHEETS_MAX_RETRY_ATTEMPTS:-3}
+      GOOGLE_SHEETS_RETRY_DELAY: ${GOOGLE_SHEETS_RETRY_DELAY:-1000}
+      
+      # Google Sheets S3 интеграция
+      GOOGLE_SHEETS_DOWNLOAD_FROM_S3: ${GOOGLE_SHEETS_DOWNLOAD_FROM_S3:-true}
+      GOOGLE_SHEETS_S3_CREDENTIALS_KEY: ${GOOGLE_SHEETS_S3_CREDENTIALS_KEY:-config/google-credentials.json}
+
+    ports:
+      - "8080:8080"
+    
+    #volumes:
+      # Google Sheets credentials (только если файл существует)
+      #- ${GOOGLE_CREDENTIALS_FILE_PATH:-./config/google-credentials.json}:/app/config/google-credentials.json:ro
+

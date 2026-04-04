@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DIMBO Pizza - Оформление заказа</title>
+    
+    <!-- Telegram WebApp API (локальная версия 7.7) -->
+    <script src="telegram-web-app.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="checkout-styles.css">
+    
+    <!-- Meta for Telegram -->
+    <meta name="telegram-bot-username" content="DIMBOpizzaBot">
+    <meta name="theme-color" content="#1a1a1a">
+    
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103585127', 'ym');
+
+        ym(103585127, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103585127" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    
+    <!-- VK Pixel (Top.Mail.Ru counter) -->
+    <script type="text/javascript">
+        var _tmr = window._tmr || (window._tmr = []);
+        _tmr.push({id: "3695469", type: "pageView", start: (new Date()).getTime()});
+        (function (d, w, id) {
+          if (d.getElementById(id)) return;
+          var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
+          ts.src = "https://top-fwz1.mail.ru/js/code.js";
+          var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
+          if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
+        })(document, window, "tmr-code");
+    </script>
+    <noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3695469;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
+    <!-- /VK Pixel (Top.Mail.Ru counter) -->
+</head>
+<body class="telegram-theme checkout-page">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Оформление заказа...</div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <button class="back-button" id="back-button">← Назад</button>
+                <span class="header-title">Оформление заказа</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Delivery Options -->
+            <section class="delivery-section">
+                <h3>Способ получения</h3>
+                <div class="delivery-options">
+                    <label class="option-card">
+                        <input type="radio" name="deliveryMethod" value="DELIVERY" id="delivery-courier" checked>
+                        <div class="option-content">
+                            <div class="option-title">🚗 Доставка курьером</div>
+                            <div class="option-subtitle">Доставим по адресу</div>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" name="deliveryMethod" value="PICKUP" id="pickup-option">
+                        <div class="option-content">
+                            <div class="option-title">🏪 Самовывоз</div>
+                            <div class="option-subtitle">Шестакова 1Б</div>
+                            <div class="option-price">Бесплатно</div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Address Input (shown by default for delivery) -->
+                <div class="address-section" id="address-section">
+                    <h4>Адрес доставки</h4>
+                    <div class="address-input-container">
+                        <input type="text" 
+                               id="address-input" 
+                               placeholder="Введите адрес доставки..."
+                               class="address-input">
+                        <!-- address-suggestions убраны согласно требованиям -->
+                    </div>
+                    <div class="address-note">
+                        <small>Укажите адрес доставки. Стоимость доставки рассчитается автоматически.</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Payment Options -->
+            <section class="payment-section">
+                <h3>Способ оплаты</h3>
+                <div class="payment-options">
+                    <label class="option-card">
+                        <input type="radio" name="paymentMethod" value="SBP" id="payment-sbp" checked>
+                        <div class="option-content">
+                            <!-- <div class="option-title">💳 СБП (Быстрая оплата)</div>
+                            <div class="option-subtitle">Оплата через банковское приложение</div> -->
+                            <div class="option-title">
+                                <img src="/miniapp/sbp-logo.png" alt="СБП - Система быстрых платежей" style="height: 40px; width: auto; max-width: 120px;">
+                            </div>
+                            <div class="option-subtitle">Быстрая оплата</div>
+                        </div>
+                    </label>
+                    <!--  -->
+                    <!-- <label class="option-card">
+                        <input type="radio" name="paymentMethod" value="CASH" id="payment-cash">
+                        <div class="option-content">
+                            <div class="option-title">💵 Наличными</div>
+                            <div class="option-subtitle">Оплата при получении</div>
+                        </div>
+                    </label> -->
+                </div>
+            </section>
+
+            <!-- Order Summary -->
+            <section class="order-summary">
+                <h2>Ваш заказ</h2>
+                <div class="order-items" id="order-items">
+                    <!-- Order items will be loaded here -->
+                </div>
+                <div class="order-total">
+                    <span>Товары: <span id="items-total">₽0</span></span>
+                    <span class="delivery-cost">Доставка: <span id="delivery-cost">₽0</span></span>
+                    <div class="total-amount">Итого: <span id="total-amount">₽0</span></div>
+                </div>
+            </section>
+
+            <!-- User Info Section (from auth) -->
+            <section class="user-info-section">
+                <h3>Получатель заказа</h3>
+                <div class="user-info-display" id="user-info-display">
+                    <div class="user-name" id="user-name">Загрузка...</div>
+                    <div class="user-phone" id="user-phone">Загрузка...</div>
+                </div>
+                <div class="comment-section">
+                    <textarea id="order-comment" 
+                              placeholder="Комментарий к заказу (необязательно)" 
+                              class="comment-textarea"></textarea>
+                </div>
+            </section>
+
+            <!-- Submit Button -->
+            <div class="submit-section">
+                <button class="submit-button" id="submit-order">
+                    Оформить заказ <span id="final-total">₽0</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Error Screen -->
+    <div id="error-screen" class="error-screen" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <div class="error-message" id="error-message">Произошла ошибка</div>
+        <button class="retry-button" id="retry-button">Повторить</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="checkout-app.js"></script>
+    <script>
+        // Debug logging
+        console.log('🔧 DEBUG: Script loaded, checking dependencies...');
+        console.log('🔧 DEBUG: Telegram WebApp available:', !!window.Telegram?.WebApp);
+        if (window.Telegram?.WebApp) {
+            console.log('🔧 DEBUG: Telegram WebApp VERSION:', window.Telegram.WebApp.version);
+            console.log('🔧 DEBUG: Telegram WebApp PLATFORM:', window.Telegram.WebApp.platform);
+        }
+        console.log('🔧 DEBUG: PizzaAPI class available:', !!window.PizzaAPI);
+        console.log('🔧 DEBUG: MagicCvetovCheckoutApp class available:', !!window.MagicCvetovCheckoutApp);
+        
+        // Error handler for debugging
+        window.addEventListener('error', (e) => {
+            console.error('🚨 Global error:', e.error);
+            console.error('🚨 Error details:', e.message, e.filename, e.lineno);
+            
+            // Показываем ошибку на экране для отладки
+            const errorScreen = document.getElementById('error-screen');
+            const errorMessage = document.getElementById('error-message');
+            if (errorScreen && errorMessage) {
+                errorMessage.textContent = `Ошибка: ${e.message} в ${e.filename}:${e.lineno}`;
+                errorScreen.style.display = 'flex';
+            }
+        });
+        
+
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('🚨 Unhandled promise rejection:', e.reason);
+            
+            // Показываем ошибку на экране
+            const errorScreen = document.getElementById('error-screen');
+            const errorMessage = document.getElementById('error-message');
+            if (errorScreen && errorMessage) {
+                errorMessage.textContent = `Promise error: ${e.reason?.message || e.reason}`;
+                errorScreen.style.display = 'flex';
+            }
+        });
+        
+        // Функция инициализации с проверками
+        function initializeApp() {
+            console.log('🔧 DEBUG: Starting app initialization...');
+            
+            // Проверяем наличие всех необходимых классов
+            if (typeof MagicCvetovCheckoutApp === 'undefined') {
+                throw new Error('MagicCvetovCheckoutApp class not found');
+            }
+            
+            if (typeof PizzaAPI === 'undefined') {
+                console.warn('⚠️ PizzaAPI class not found, will be created in app');
+            }
+            
+            try {
+                console.log('🔧 DEBUG: Creating MagicCvetovCheckoutApp...');
+                const app = new MagicCvetovCheckoutApp();
+                console.log('🔧 DEBUG: App created successfully:', app);
+                
+                // Сохраняем глобально для отладки
+                window.checkoutApp = app;
+            } catch (error) {
+                console.error('🚨 Failed to create app:', error);
+                console.error('🚨 Error stack:', error.stack);
+                
+                // Показываем подробную ошибку на экране
+                const errorScreen = document.getElementById('error-screen');
+                const errorMessage = document.getElementById('error-message');
+                if (errorScreen && errorMessage) {
+                    errorMessage.textContent = `Ошибка инициализации: ${error.message}`;
+                    errorScreen.style.display = 'flex';
+                }
+                
+                throw error;
+            }
+        }
+        
+        
+        // Инициализация приложения
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('🔧 DEBUG: DOMContentLoaded fired');
+                setTimeout(initializeApp, 100); // Небольшая задержка для загрузки всех скриптов
+            });
+        } else {
+            console.log('🔧 DEBUG: DOM already ready');
+            setTimeout(initializeApp, 100);
+        }
+    </script>
+</body>
+</html>
