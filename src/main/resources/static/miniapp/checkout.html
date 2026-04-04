@@ -182,7 +182,7 @@
             console.log('🔧 DEBUG: Telegram WebApp PLATFORM:', window.Telegram.WebApp.platform);
         }
         console.log('🔧 DEBUG: PizzaAPI class available:', !!window.PizzaAPI);
-        console.log('🔧 DEBUG: MagicCvetovCheckoutApp class available:', !!window.MagicCvetovCheckoutApp);
+        console.log('🔧 DEBUG: PizzaNatCheckoutApp class available:', !!window.PizzaNatCheckoutApp);
         
         // Error handler for debugging
         window.addEventListener('error', (e) => {
@@ -217,8 +217,8 @@
             console.log('🔧 DEBUG: Starting app initialization...');
             
             // Проверяем наличие всех необходимых классов
-            if (typeof MagicCvetovCheckoutApp === 'undefined') {
-                throw new Error('MagicCvetovCheckoutApp class not found');
+            if (typeof PizzaNatCheckoutApp === 'undefined') {
+                throw new Error('PizzaNatCheckoutApp class not found');
             }
             
             if (typeof PizzaAPI === 'undefined') {
@@ -226,8 +226,8 @@
             }
             
             try {
-                console.log('🔧 DEBUG: Creating MagicCvetovCheckoutApp...');
-                const app = new MagicCvetovCheckoutApp();
+                console.log('🔧 DEBUG: Creating PizzaNatCheckoutApp...');
+                const app = new PizzaNatCheckoutApp();
                 console.log('🔧 DEBUG: App created successfully:', app);
                 
                 // Сохраняем глобально для отладки
