@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS product_images (
 DELETE FROM product_images WHERE product_id IN (SELECT id FROM products WHERE category_id = (SELECT id FROM categories WHERE name = 'Монобукеты'));
 DELETE FROM products WHERE category_id = (SELECT id FROM categories WHERE name = 'Монобукеты');
 
--- Вставляем продукты
+-- Вставляем продукты (игнорируем дубликаты по имени)
 INSERT INTO products (name, description, price, category_id, image_url, is_available, is_special_offer) VALUES
 ('Монобукет из 7 лавандовых Гипсофил', 'Купить монобукет из 7 лавандовых гипсофил с доставкой', 3990.0, (SELECT id FROM categories WHERE name = 'Монобукеты'), 'https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/monobuket_iz_7_lavandovykh_gipsofil/monobuket_iz_7_lavandovykh_gipsofil_1.webp', true, false),
 ('Монобукет из 5 коралловых георгинов в упаковке', 'Купить монобукет из 5 коралловых георгинов в упаковке с доставкой', 3990.0, (SELECT id FROM categories WHERE name = 'Монобукеты'), 'https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/monobuket_iz_5_korallovykh_georginov_v_upakovke/monobuket_iz_5_korallovykh_georginov_v_upakovke_1.webp', true, false),
@@ -267,7 +267,8 @@ INSERT INTO products (name, description, price, category_id, image_url, is_avail
 ('Монобукет Пион 101 шт', 'Купить монобукет пион 101 шт с доставкой', 119490.0, (SELECT id FROM categories WHERE name = 'Монобукеты'), 'https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/monobuket_pion_101_sht/monobuket_pion_101_sht_1.webp', true, false),
 ('Монобукет Пион 51 шт', 'Купить монобукет пион 51 шт с доставкой', 60990.0, (SELECT id FROM categories WHERE name = 'Монобукеты'), 'https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/monobuket_pion_51_sht/monobuket_pion_51_sht_1.webp', true, false),
 ('Монобукет Пион 35 шт', 'Купить монобукет пион 35 шт с доставкой', 41990.0, (SELECT id FROM categories WHERE name = 'Монобукеты'), 'https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/monobuket_pion_35_sht/monobuket_pion_35_sht_1.webp', true, false),
-('Монобукет Пион 11 шт', 'Купить монобукет пион 11 шт с доставкой', 12990.0, (SELECT id FROM categories WHERE name = 'Монобукеты'), 'https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/monobuket_pion_11_sht/monobuket_pion_11_sht_1.webp', true, false);
+('Монобукет Пион 11 шт', 'Купить монобукет пион 11 шт с доставкой', 12990.0, (SELECT id FROM categories WHERE name = 'Монобукеты'), 'https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/monobuket_pion_11_sht/monobuket_pion_11_sht_1.webp', true, false)
+ON CONFLICT (name) DO NOTHING;
 
 -- Вставляем дополнительные картинки
 INSERT INTO product_images (product_id, image_url, display_order) VALUES
