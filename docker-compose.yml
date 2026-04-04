@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.optimized
-    container_name: magicvetov-app
+    container_name: magicvetov
     restart: unless-stopped
 
     # Health check
