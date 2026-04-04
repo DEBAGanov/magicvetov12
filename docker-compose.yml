@@ -52,7 +52,7 @@ services:
       TIMEWEB_S3_ACCESS_KEY: AJK63DSBOEBQD3IVTLOT
       TIMEWEB_S3_SECRET_KEY: eOkZ8nzUkylhcsgPRQVJdr8qmvblxvaq7zoEcNpk
       TIMEWEB_S3_ENDPOINT: https://s3.twcstorage.ru
-      TIMEWEB_S3_BUCKET: magiacvetov12
+      TIMEWEB_S3_BUCKET: f9c8e17a-magicvetov-products
       TIMEWEB_S3_PUBLIC_URL: https://s3.twcstorage.ru/magiacvetov12
 
       # Кэширование (simple для prod без Redis)
