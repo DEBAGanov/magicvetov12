@@ -10,7 +10,7 @@ WHERE NOT EXISTS (SELECT 1 FROM categories WHERE name = 'Монобукеты');
 
 -- Таблица для дополнительных картинок продукта
 CREATE TABLE IF NOT EXISTS product_images (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     image_url VARCHAR(500) NOT NULL,
     display_order INTEGER DEFAULT 0,
