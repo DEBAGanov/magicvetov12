@@ -106,6 +106,20 @@
         <button class="retry-button" id="retry-button">Повторить</button>
     </div>
 
+    <!-- Image Viewer Modal -->
+    <div id="image-viewer" class="image-viewer" style="display: none;">
+        <div class="image-viewer-overlay"></div>
+        <div class="image-viewer-content">
+            <button class="image-viewer-close" id="image-viewer-close">✕</button>
+            <img id="image-viewer-img" src="" alt="Product image">
+            <div class="image-viewer-info">
+                <div class="image-viewer-title" id="image-viewer-title"></div>
+                <div class="image-viewer-price" id="image-viewer-price"></div>
+                <button class="image-viewer-add-btn" id="image-viewer-add-btn">Добавить в корзину</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="api.js"></script>
     <script src="menu-app.js"></script>

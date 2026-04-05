@@ -128,10 +128,11 @@ class PizzaNatMenuApp {
         this.cart = { items: [], totalAmount: 0 };
         this.products = [];
         this.authToken = null;
-        
+        this.currentViewerProduct = null;
+
         // Load cart from localStorage
         this.loadCartFromStorage();
-        
+
         // Initialize app
         this.init();
     }
@@ -373,6 +374,39 @@ class PizzaNatMenuApp {
      * Настройка UI и обработчиков событий
      */
     setupUI() {
+        // Обработчик клика на изображение для просмотра
+        document.addEventListener('click', (e) => {
+            // Клик на изображение товара
+            if (e.target.classList.contains('menu-item-image')) {
+                const productElement = e.target.closest('.menu-item');
+                const productId = productElement?.querySelector('[data-product-id]')?.dataset.productId;
+                if (productId) {
+                    const product = this.products.find(p => p.id === parseInt(productId));
+                    if (product) {
+                        this.openImageViewer(product);
+                        return;
+                    }
+                }
+            }
+        });
+
+        // Закрытие модального окна просмотра изображения
+        document.getElementById('image-viewer-close')?.addEventListener('click', () => {
+            this.closeImageViewer();
+        });
+
+        document.querySelector('.image-viewer-overlay')?.addEventListener('click', () => {
+            this.closeImageViewer();
+        });
+
+        // Кнопка "Добавить в корзину" в модальном окне
+        document.getElementById('image-viewer-add-btn')?.addEventListener('click', () => {
+            if (this.currentViewerProduct) {
+                this.addToCart(this.currentViewerProduct, 1);
+                this.closeImageViewer();
+            }
+        });
+
         // Кнопки товаров (только для карточек товаров, не для корзины)
         document.addEventListener('click', (e) => {
             // Проверяем, что это не кнопка в корзине
@@ -812,6 +846,45 @@ class PizzaNatMenuApp {
         } catch (error) {
             console.warn('Failed to load cart from localStorage:', error);
             this.cart = { items: [], totalAmount: 0 };
+        }
+    }
+
+    /**
+     * Открыть просмотр изображения товара
+     */
+    openImageViewer(product) {
+        this.currentViewerProduct = product;
+
+        const viewer = document.getElementById('image-viewer');
+        const img = document.getElementById('image-viewer-img');
+        const title = document.getElementById('image-viewer-title');
+        const price = document.getElementById('image-viewer-price');
+
+        if (viewer && img && title && price) {
+            img.src = product.imageUrl || '/static/images/products/pizza_4_chees.png';
+            img.alt = product.name;
+            title.textContent = product.name;
+            price.textContent = `₽${product.price}`;
+
+            viewer.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            // Haptic feedback
+            if (this.tg?.HapticFeedback) {
+                this.tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+    }
+
+    /**
+     * Закрыть просмотр изображения
+     */
+    closeImageViewer() {
+        const viewer = document.getElementById('image-viewer');
+        if (viewer) {
+            viewer.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            this.currentViewerProduct = null;
         }
     }
 

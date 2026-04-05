@@ -218,15 +218,15 @@ public class MagicCvetovTelegramBot extends TelegramLongPollingBot {
      */
     private void sendWelcomeMessage(Long chatId, TelegramUserData userData) {
         String message = String.format(
-                "🍕 *%s, добро пожаловать в DIMBO PIZZA!*\n\n" +
+                "🍕 *%s, добро пожаловать в Магия Цветов Волжск!*\n\n" +
                         // "Привет, %s!\n\n" +
-                        "Это официальный бот пиццерии DIMBO PIZZA.\n\n" +
-                        "Для заказа пиццы используйте\n" +
-                        "t.me/DIMBOpizzaBot/menu\n\n" +
+                        "Это официальный бот Магия Цветов.\n\n" +
+                        "Для заказа букета используйте\n" +
+                        "t.me/magiacvetov12_bot\n\n" +
                         //  наше мобильное приложение\n" +
                         // "https://www.rustore.ru/catalog/app/com.magicvetov.app\n\n" +
-                        "наш веб-сайт https://dimbopizza.ru\n\n" +
-                        "или используйте кнопку '🍕 Заказать' в меню телеграмма. \n\n",
+                        "наш веб-сайт https://magiacvetov12.ru/\n\n" +
+                        "или используйте кнопку '🍕 Заказать букет' в меню телеграмма. \n\n",
                         // "Команды:\n" +
                         // "• /help - помощь\n",
                 userData.getDisplayName());
