@@ -53,11 +53,11 @@
     transform: scale(0.98);
 }
 
-/* Product Image */
+/* Product Image - увеличенный размер */
 .menu-item-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
     object-fit: cover;
     flex-shrink: 0;
     background: var(--max-bg-color);
@@ -69,14 +69,14 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 80px;
+    min-height: 120px;
 }
 
 .menu-item-title {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--max-text-color);
-    line-height: 1.3;
+    line-height: 1.2;
     margin-bottom: 4px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -86,10 +86,10 @@
 }
 
 .menu-item-price {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--max-text-color);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 /* Action Buttons */
@@ -114,13 +114,13 @@
     background: #ff6b35;
     color: #ffffff;
     border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.2s;
-    min-width: 70px;
+    min-width: 60px;
 }
 
 .add-button:hover {
@@ -591,4 +591,79 @@
 
 .image-viewer-add-btn:active {
     transform: scale(0.95);
+}
+
+/* Image Slider Styles */
+.image-slider-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.image-slider-wrapper {
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.image-slider-wrapper img {
+    max-width: 100%;
+    max-height: 55vh;
+    object-fit: contain;
+}
+
+.image-slider-btn {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.image-slider-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.image-slider-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Slider Indicators */
+.image-slider-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.slider-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.slider-indicator.active {
+    background: #ff6b35;
+    width: 24px;
+    border-radius: 4px;
+}
+
+.slider-indicator:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.slider-indicator.active:hover {
+    background: #ff6b35;
 }
