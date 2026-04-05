@@ -99,6 +99,32 @@
         <button class="retry-button" id="retry-button">Повторить</button>
     </div>
 
+    <!-- Image Viewer Modal -->
+    <div id="image-viewer" class="image-viewer" style="display: none;">
+        <div class="image-viewer-overlay"></div>
+        <div class="image-viewer-content">
+            <button class="image-viewer-close" id="image-viewer-close">✕</button>
+
+            <!-- Slider Container -->
+            <div class="image-slider-container">
+                <button class="image-slider-btn prev" id="image-slider-prev">‹</button>
+                <div class="image-slider-wrapper">
+                    <img id="image-viewer-img" src="" alt="Product image">
+                </div>
+                <button class="image-slider-btn next" id="image-slider-next">›</button>
+            </div>
+
+            <!-- Slider Indicators -->
+            <div class="image-slider-indicators" id="image-slider-indicators"></div>
+
+            <div class="image-viewer-info">
+                <div class="image-viewer-title" id="image-viewer-title"></div>
+                <div class="image-viewer-price" id="image-viewer-price"></div>
+                <button class="image-viewer-add-btn" id="image-viewer-add-btn">Добавить в корзину</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="max-api.js"></script>
     <script src="max-menu-app.js"></script>

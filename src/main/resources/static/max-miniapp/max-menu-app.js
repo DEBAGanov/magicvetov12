@@ -73,6 +73,9 @@ class PizzaNatMaxMenuApp {
         this.cart = { items: [], totalAmount: 0 };
         this.products = [];
         this.authToken = null;
+        this.currentViewerProduct = null;
+        this.currentProductImages = [];
+        this.currentImageIndex = 0;
 
         // Load cart from localStorage
         this.loadCartFromStorage();
@@ -299,7 +302,77 @@ class PizzaNatMaxMenuApp {
      * Настройка UI и обработчиков событий
      */
     setupUI() {
-        // Кнопки товаров
+        // Обработчик клика на карточку товара для просмотра
+        document.addEventListener('click', (e) => {
+            // Игнорируем клики на кнопки
+            if (e.target.classList.contains('add-button') ||
+                e.target.classList.contains('quantity-btn') ||
+                e.target.classList.contains('minus') ||
+                e.target.classList.contains('plus') ||
+                e.target.classList.contains('cart-quantity-btn')) {
+                return;
+            }
+
+            // Клик на карточку товара (весь блок)
+            const productElement = e.target.closest('.menu-item');
+            if (productElement) {
+                const productId = productElement.querySelector('[data-product-id]')?.dataset.productId;
+                if (productId) {
+                    const product = this.products.find(p => p.id === parseInt(productId));
+                    if (product) {
+                        this.openImageViewer(product);
+                        return;
+                    }
+                }
+            }
+        });
+
+        // Закрытие модального окна просмотра изображения
+        document.getElementById('image-viewer-close')?.addEventListener('click', () => {
+            this.closeImageViewer();
+        });
+
+        document.querySelector('.image-viewer-overlay')?.addEventListener('click', () => {
+            this.closeImageViewer();
+        });
+
+        // Кнопка "Добавить в корзину" в модальном окне
+        document.getElementById('image-viewer-add-btn')?.addEventListener('click', () => {
+            if (this.currentViewerProduct) {
+                this.addToCart(this.currentViewerProduct, 1);
+                this.closeImageViewer();
+            }
+        });
+
+        // Кнопки навигации слайдера
+        document.getElementById('image-slider-prev')?.addEventListener('click', () => {
+            this.prevImage();
+        });
+
+        document.getElementById('image-slider-next')?.addEventListener('click', () => {
+            this.nextImage();
+        });
+
+        // Свайп для слайдера
+        let touchStartX = 0;
+        const sliderWrapper = document.querySelector('.image-slider-wrapper');
+        sliderWrapper?.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        sliderWrapper?.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    this.nextImage();
+                } else {
+                    this.prevImage();
+                }
+            }
+        });
+
+        // Кнопки товаров (для добавления/удаления)
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('cart-quantity-btn')) return;
 
@@ -611,6 +684,126 @@ class PizzaNatMaxMenuApp {
     showApp() {
         document.getElementById('loading-screen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
+    }
+
+    /**
+     * Открыть просмотр изображения товара
+     */
+    openImageViewer(product) {
+        this.currentViewerProduct = product;
+        this.currentImageIndex = 0;
+
+        // Собираем все изображения товара
+        this.currentProductImages = [product.imageUrl];
+        if (product.additionalImages && product.additionalImages.length > 0) {
+            this.currentProductImages = this.currentProductImages.concat(
+                product.additionalImages.map(img => img.imageUrl || img)
+            );
+        }
+
+        const viewer = document.getElementById('image-viewer');
+        const img = document.getElementById('image-viewer-img');
+        const title = document.getElementById('image-viewer-title');
+        const price = document.getElementById('image-viewer-price');
+        const prevBtn = document.getElementById('image-slider-prev');
+        const nextBtn = document.getElementById('image-slider-next');
+
+        if (viewer && img && title && price) {
+            // Показываем первое изображение
+            img.src = this.currentProductImages[0];
+            img.alt = product.name;
+            title.textContent = product.name;
+            price.textContent = `₽${product.price}`;
+
+            // Создаём индикаторы
+            this.updateSliderIndicators();
+
+            // Показываем/скрываем кнопки навигации
+            if (prevBtn && nextBtn) {
+                prevBtn.style.display = this.currentProductImages.length > 1 ? 'flex' : 'none';
+                nextBtn.style.display = this.currentProductImages.length > 1 ? 'flex' : 'none';
+            }
+
+            viewer.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            // Haptic feedback
+            if (this.max?.haptic) {
+                try {
+                    this.max.haptic.impactOccurred('light');
+                } catch (e) {}
+            }
+        }
+    }
+
+    /**
+     * Обновить индикаторы слайдера
+     */
+    updateSliderIndicators() {
+        const indicators = document.getElementById('image-slider-indicators');
+        if (!indicators) return;
+
+        indicators.innerHTML = '';
+
+        this.currentProductImages.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = `slider-indicator ${index === this.currentImageIndex ? 'active' : ''}`;
+            dot.addEventListener('click', () => this.goToImage(index));
+            indicators.appendChild(dot);
+        });
+    }
+
+    /**
+     * Перейти к изображению по индексу
+     */
+    goToImage(index) {
+        if (index < 0 || index >= this.currentProductImages.length) return;
+
+        this.currentImageIndex = index;
+        const img = document.getElementById('image-viewer-img');
+        if (img) {
+            img.src = this.currentProductImages[index];
+        }
+        this.updateSliderIndicators();
+
+        // Haptic feedback
+        if (this.max?.haptic) {
+            try {
+                this.max.haptic.impactOccurred('light');
+            } catch (e) {}
+        }
+    }
+
+    /**
+     * Следующее изображение
+     */
+    nextImage() {
+        if (this.currentImageIndex < this.currentProductImages.length - 1) {
+            this.goToImage(this.currentImageIndex + 1);
+        }
+    }
+
+    /**
+     * Предыдущее изображение
+     */
+    prevImage() {
+        if (this.currentImageIndex > 0) {
+            this.goToImage(this.currentImageIndex - 1);
+        }
+    }
+
+    /**
+     * Закрыть просмотр изображения
+     */
+    closeImageViewer() {
+        const viewer = document.getElementById('image-viewer');
+        if (viewer) {
+            viewer.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            this.currentViewerProduct = null;
+            this.currentProductImages = [];
+            this.currentImageIndex = 0;
+        }
     }
 
     /**
