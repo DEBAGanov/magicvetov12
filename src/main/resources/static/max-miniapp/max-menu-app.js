@@ -173,7 +173,7 @@ class PizzaNatMaxMenuApp {
         // Базовая темная тема для MAX
         root.style.setProperty('--tg-theme-bg-color', '#1a1a1a');
         root.style.setProperty('--tg-theme-text-color', '#ffffff');
-        root.style.setProperty('--tg-theme-button-color', '#ff6b35');
+        root.style.setProperty('--tg-theme-button-color', '#21A038');
         root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
 
         console.log('🎨 MAX theme applied');

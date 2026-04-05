@@ -111,7 +111,7 @@
 }
 
 .add-button {
-    background: #ff6b35;
+    background: #21A038;
     color: #ffffff;
     border: none;
     border-radius: 6px;
@@ -159,7 +159,7 @@
 }
 
 .quantity-btn.plus {
-    background: #ff6b35;
+    background: #21A038;
 }
 
 .quantity-btn:hover {
@@ -176,7 +176,7 @@
 
 /* Cart Badge */
 .cart-count-badge {
-    background: #ff6b35;
+    background: #21A038;
     color: white;
     border-radius: 50%;
     width: 22px;
@@ -340,7 +340,7 @@
 }
 
 .cart-quantity-btn.plus {
-    background: #ff6b35;
+    background: #21A038;
 }
 
 .cart-quantity-btn:hover {
@@ -388,7 +388,7 @@
 
 .pay-button {
     width: 100%;
-    background: #ff6b35;
+    background: #21A038;
     color: #ffffff;
     border: none;
     border-radius: 12px;
@@ -413,7 +413,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #ff6b35;
+    background: #21A038;
     padding: 14px 20px;
     z-index: 999;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
@@ -577,12 +577,12 @@
 .image-viewer-price {
     font-size: 20px;
     font-weight: 700;
-    color: #ff6b35;
+    color: #21A038;
     margin-bottom: 16px;
 }
 
 .image-viewer-add-btn {
-    background: #ff6b35;
+    background: #21A038;
     color: white;
     border: none;
     border-radius: 12px;
@@ -663,7 +663,7 @@
 }
 
 .slider-indicator.active {
-    background: #ff6b35;
+    background: #21A038;
     width: 24px;
     border-radius: 4px;
 }
@@ -673,5 +673,5 @@
 }
 
 .slider-indicator.active:hover {
-    background: #ff6b35;
+    background: #21A038;
 }

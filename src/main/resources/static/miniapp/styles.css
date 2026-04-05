@@ -17,7 +17,7 @@
     --tg-theme-button-text-color: var(--tg-color-scheme-button-text, #ffffff);
     
     /* App Colors */
-    --primary-color: #ff6b35;
+    --primary-color: #21A038;
     --primary-dark: #e55a2e;
     --secondary-color: #2c2c2e;
     --accent-color: #34c759;
@@ -84,7 +84,7 @@ body {
     width: 40px;
     height: 40px;
     border: 3px solid rgba(0, 0, 0, 0.1);
-    border-top: 3px solid var(--tg-theme-button-color, #ff6b35);
+    border-top: 3px solid var(--tg-theme-button-color, #21A038);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: var(--spacing-md);
