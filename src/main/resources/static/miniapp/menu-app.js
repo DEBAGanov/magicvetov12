@@ -376,12 +376,20 @@ class PizzaNatMenuApp {
      * Настройка UI и обработчиков событий
      */
     setupUI() {
-        // Обработчик клика на изображение для просмотра
+        // Обработчик клика на карточку товара для просмотра
         document.addEventListener('click', (e) => {
-            // Клик на изображение товара
-            if (e.target.classList.contains('menu-item-image')) {
-                const productElement = e.target.closest('.menu-item');
-                const productId = productElement?.querySelector('[data-product-id]')?.dataset.productId;
+            // Игнорируем клики на кнопки
+            if (e.target.classList.contains('add-button') ||
+                e.target.classList.contains('quantity-btn') ||
+                e.target.classList.contains('minus') ||
+                e.target.classList.contains('plus')) {
+                return;
+            }
+
+            // Клик на карточку товара (весь блок)
+            const productElement = e.target.closest('.menu-item');
+            if (productElement) {
+                const productId = productElement.querySelector('[data-product-id]')?.dataset.productId;
                 if (productId) {
                     const product = this.products.find(p => p.id === parseInt(productId));
                     if (product) {
