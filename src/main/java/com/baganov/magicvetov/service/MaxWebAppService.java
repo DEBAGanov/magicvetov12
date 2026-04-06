@@ -112,52 +112,69 @@ public class MaxWebAppService {
      */
     public boolean validateInitData(String initDataRaw) {
         try {
+            log.info("🔐 === MAX VALIDATE INIT DATA ===");
+
             if (initDataRaw == null || initDataRaw.isEmpty()) {
-                log.error("initDataRaw пуст");
+                log.error("🔐 initDataRaw пуст");
                 return false;
             }
+
+            log.info("🔐 initDataRaw length: {}", initDataRaw.length());
+            log.info("🔐 initDataRaw preview: {}", initDataRaw.substring(0, Math.min(200, initDataRaw.length())));
 
             // 1. Парсим параметры
             Map<String, String> params = parseQueryString(initDataRaw);
+            log.info("🔐 Parsed params count: {}", params.size());
+            log.info("🔐 Params keys: {}", params.keySet());
+
             String hash = params.get("hash");
 
             if (hash == null || hash.isEmpty()) {
-                log.error("Отсутствует hash в MAX initData");
+                log.error("🔐 Отсутствует hash в MAX initData");
                 return false;
             }
+
+            log.info("🔐 Hash from request: {}", hash);
 
             // 2. Получаем bot token
             String botToken = maxBotConfig.getUserBotToken();
             if (botToken == null || botToken.isEmpty()) {
-                log.error("MAX Bot token не настроен");
+                log.error("🔐 MAX Bot token не настроен!");
                 return false;
             }
 
+            log.info("🔐 Bot token present: {} chars", botToken.length());
+
             // 3. Формируем data-check-string (без hash, по алфавиту)
             String dataCheckString = buildDataCheckString(params);
-            log.debug("MAX data check string: {}", dataCheckString);
+            log.info("🔐 Data check string: {}", dataCheckString);
 
             // 4. Вычисляем secret key
             // MAX: HMAC_SHA256("WebAppData", botToken)
             // Отличие от Telegram: нет конкатенации "WebAppData" + botToken
             byte[] secretKey = computeHMAC("WebAppData", botToken.getBytes(StandardCharsets.UTF_8));
+            log.info("🔐 Secret key computed: {} bytes", secretKey.length);
 
             // 5. Вычисляем hash данных
             String computedHash = computeHMACHex(dataCheckString, secretKey);
+            log.info("🔐 Computed hash: {}", computedHash);
 
             // 6. Сравниваем хеши
             boolean isValid = computedHash.equals(hash);
 
             if (!isValid) {
-                log.warn("Неверный hash MAX. Ожидался: {}, получен: {}", computedHash, hash);
+                log.warn("🔐 ❌ Неверный hash MAX!");
+                log.warn("🔐    Ожидался: {}", computedHash);
+                log.warn("🔐    Получен:  {}", hash);
+                log.warn("🔐    Data check string: {}", dataCheckString);
             } else {
-                log.debug("MAX initData валидация успешна");
+                log.info("🔐 ✅ MAX initData валидация успешна!");
             }
 
             return isValid;
 
         } catch (Exception e) {
-            log.error("Ошибка валидации MAX initData: {}", e.getMessage(), e);
+            log.error("🔐 ❌ Ошибка валидации MAX initData: {}", e.getMessage(), e);
             return false;
         }
     }
