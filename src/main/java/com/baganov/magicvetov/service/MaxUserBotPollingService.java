@@ -528,13 +528,14 @@ public class MaxUserBotPollingService {
         String menuMessage = String.format("""
                 👋 **Привет, %s!**
 
-                🍕 **Димбо пицца - приложение для заказа пиццы в Волжске.**
+                🍕 **Магия Цветов - это приложение для заказа цветов в Волжске.**
 
-                Доставка с 11:00 до 20:00.
+                Доставка с 07:30 до 20:00.
 
-                📞 тел. +7 (902) 105-34-34
+                📞 тел. +7 (964) 861-23-70
 
-                📍 Адрес: г. Волжск, ул. Шестакова 1б
+                📍 Адрес: г. Волжск, ул. Володарского, 5
+                (Напротив остановки 7 школы, в здании м-на Чижик)
 
                 Выберите действие:
                 """, userName);
@@ -553,17 +554,17 @@ public class MaxUserBotPollingService {
      */
     private void handleHelpCommand(Long userId) {
         String helpMessage = """
-                🤖 **ДИМБО ПИЦЦА - Бот помощи**
+                🤖 **Магия Цветов - Бот помощи**
 
                 **Доступные команды:**
                 `/start` - Начать работу с ботом
-                `/menu` - Открыть меню
+                `/menu` - Заказать букет
                 `/help` - Показать эту справку
 
                 **Функции:**
-                • 🍕 Заказ пиццы через Mini App
+                • 🍕 Заказ цветов через Mini App
                 • 📱 Получение уведомлений о статусе заказов
-                • 📞 Связь с поддержкой через +7 (902) 105 -34-34
+                • 📞 Связь с поддержкой через +7 (964) 861-23-70
                 """;
         sendMessage(userId, helpMessage);
     }
@@ -592,8 +593,8 @@ public class MaxUserBotPollingService {
             // Кнопка: Открыть меню (link тип для открытия URL)
             Map<String, Object> menuButton = new HashMap<>();
             menuButton.put("type", "link");
-            menuButton.put("text", "🍕 Открыть меню");
-            menuButton.put("url", "https://max.ru/id121603899498_bot?startapp");
+            menuButton.put("text", "🌹 Заказать букет");
+            menuButton.put("url", "https://max.ru/id121602873440_bot?startapp");
             buttonRows.add(List.of(menuButton));
 
             // Кнопка: Связь с поддержкой (link тип для открытия URL)
@@ -603,7 +604,12 @@ public class MaxUserBotPollingService {
             supportButton.put("url", "https://max.ru/u/f9LHodD0cOLntZ_-fT2vQ_TC2goPd1KD3E48k309fX_KUv4aGYawlXRscU8");
             buttonRows.add(List.of(supportButton));
 
-            // Примечание: телефон указан в тексте сообщения - MAX не поддерживает tel: в кнопках
+            // Кнопка: Как нас найти (ссылка на Яндекс Карты)
+            Map<String, Object> locationButton = new HashMap<>();
+            locationButton.put("type", "link");
+            locationButton.put("text", "📍 Как нас найти в Волжске");
+            locationButton.put("url", "https://yandex.ru/maps/org/magiya_tsvetov/174166621256/reviews/");
+            buttonRows.add(List.of(locationButton));
 
             Map<String, Object> attachment = new HashMap<>();
             attachment.put("type", "inline_keyboard");
