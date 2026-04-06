@@ -238,6 +238,10 @@ public class MaxUserBotPollingService {
             case "bot_started":
                 handleBotStarted(update);
                 break;
+            case "message_contact_requested":
+                // Обработка запроса контакта (request_contact)
+                handleContactRequested(update);
+                break;
             default:
                 log.debug("MAX User: Unknown update_type: {}", updateType);
         }
@@ -430,6 +434,102 @@ public class MaxUserBotPollingService {
     }
 
     /**
+     * Обновление пользователя MAX с номером телефона
+     * Этот метод вызывается когда пользователь делится контактом через request_contact
+     */
+    @Transactional
+    public void updateUserWithPhone(Long maxUserId, String maxUsername, String firstName, String lastName, String phoneNumber) {
+        try {
+            log.info("📱 MAX User: Updating user with phone: maxUserId={}, phone={}", maxUserId, maskPhone(phoneNumber));
+
+            // Форматируем номер телефона
+            String formattedPhone = formatPhoneNumber(phoneNumber);
+
+            // Ищем существующего пользователя по MAX ID
+            Optional<User> existingUser = userRepository.findByTelegramId(maxUserId);
+
+            if (existingUser.isPresent()) {
+                // Обновляем существующего пользователя
+                User user = existingUser.get();
+                user.setPhone(formattedPhone);
+                user.setIsPhoneVerified(true);
+                if (maxUsername != null && !maxUsername.isEmpty()) {
+                    user.setTelegramUsername(maxUsername);
+                }
+                if (firstName != null && !firstName.isEmpty()) {
+                    user.setFirstName(firstName);
+                }
+                if (lastName != null && !lastName.isEmpty()) {
+                    user.setLastName(lastName);
+                }
+                user.setIsTelegramVerified(true);
+                userRepository.save(user);
+                log.info("📱 MAX User: Updated user {} with phone: {}", maxUserId, maskPhone(formattedPhone));
+                return;
+            }
+
+            // Создаем нового пользователя с телефоном
+            User user = new User();
+            user.setUsername("max_" + maxUserId);
+            user.setPassword("");
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setPhone(formattedPhone);
+            user.setIsPhoneVerified(true);
+            user.setTelegramId(maxUserId);
+            user.setTelegramUsername(maxUsername);
+            user.setIsTelegramVerified(true);
+            user.setActive(true);
+
+            userRepository.save(user);
+            log.info("📱 MAX User: Created new user {} with phone: {}", maxUserId, maskPhone(formattedPhone));
+
+        } catch (Exception e) {
+            log.error("📱 MAX User: Error updating user with phone: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Форматирование номера телефона в формат +7
+     */
+    private String formatPhoneNumber(String phone) {
+        if (phone == null || phone.isEmpty()) {
+            return null;
+        }
+
+        // Убираем все кроме цифр
+        String digits = phone.replaceAll("[^0-9]", "");
+
+        // Если начинается с 8 и 11 цифр - заменяем на +7
+        if (digits.startsWith("8") && digits.length() == 11) {
+            return "+7" + digits.substring(1);
+        }
+
+        // Если 10 цифр - добавляем +7
+        if (digits.length() == 10) {
+            return "+7" + digits;
+        }
+
+        // Если уже начинается с 7 и 11 цифр - добавляем +
+        if (digits.startsWith("7") && digits.length() == 11) {
+            return "+" + digits;
+        }
+
+        // Возвращаем как есть с + если не matches
+        return phone.startsWith("+") ? phone : "+" + phone;
+    }
+
+    /**
+     * Маскирование номера телефона для логов
+     */
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) {
+            return "***";
+        }
+        return phone.substring(0, 4) + "***" + phone.substring(phone.length() - 3);
+    }
+
+    /**
      * Обработка callback авторизации
      */
     private void handleAuthCallback(Long userId, String callbackData) {
@@ -492,6 +592,73 @@ public class MaxUserBotPollingService {
      */
     private void handleMenuCallback(Long userId) {
         handleMenuCommand(userId);
+    }
+
+    /**
+     * Обработка запроса контакта (request_contact)
+     * Когда пользователь нажимает кнопку request_contact, MAX отправляет update
+     * с типом message_contact_requested или message_callback с данными контакта
+     */
+    private void handleContactRequested(JsonNode update) {
+        try {
+            log.info("📱 MAX User: Contact requested update: {}", update.toString());
+
+            // Извлекаем данные пользователя и контакта
+            JsonNode callback = update.path("callback");
+            JsonNode user = callback.path("user");
+            if (user.isMissingNode() || user.isNull()) {
+                user = callback.path("sender");
+            }
+
+            Long userId = user.has("user_id") ? user.get("user_id").asLong() : null;
+            String username = user.has("username") ? user.get("username").asText() : null;
+            String firstName = user.has("first_name") ? user.get("first_name").asText() :
+                    (user.has("name") ? user.get("name").asText() : null);
+            String lastName = user.has("last_name") ? user.get("last_name").asText() : null;
+
+            // Пытаемся извлечь контакт из callback payload
+            JsonNode payload = callback.path("payload");
+            String phoneNumber = null;
+
+            // Контакт может прийти в разных форматах
+            if (payload.isObject()) {
+                if (payload.has("phone_number")) {
+                    phoneNumber = payload.get("phone_number").asText();
+                } else if (payload.has("phone")) {
+                    phoneNumber = payload.get("phone").asText();
+                }
+            } else if (payload.isTextual()) {
+                // Если payload - строка, проверяем формат
+                String payloadText = payload.asText();
+                if (payloadText.startsWith("contact_")) {
+                    phoneNumber = payloadText.substring("contact_".length());
+                }
+            }
+
+            if (userId == null) {
+                log.warn("📱 MAX User: Contact request without user_id");
+                return;
+            }
+
+            log.info("📱 MAX User: Contact shared by userId={}, phone={}",
+                    userId, phoneNumber != null ? maskPhone(phoneNumber) : "null");
+
+            if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                // Обновляем пользователя с номером телефона
+                updateUserWithPhone(userId, username, firstName, lastName, phoneNumber);
+                sendMessage(userId, String.format(
+                        "✅ **Номер телефона получен!**\n\n" +
+                        "📱 Ваш номер: %s\n\n" +
+                        "Теперь вы будете получать уведомления о статусе ваших заказов!",
+                        maskPhone(phoneNumber)));
+            } else {
+                // Номер не получен - просим отправить вручную
+                sendMessage(userId, "📱 Пожалуйста, отправьте ваш номер телефона для получения уведомлений о заказах.");
+            }
+
+        } catch (Exception e) {
+            log.error("📱 MAX User: Error processing contact request: {}", e.getMessage(), e);
+        }
     }
 
     /**
@@ -586,6 +753,10 @@ public class MaxUserBotPollingService {
             String userBotToken = maxBotConfig.getUserBotToken();
             String url = String.format("%s/messages?user_id=%d", maxBotConfig.getApiUrl(), userId);
 
+            // Проверяем, есть ли у пользователя номер телефона
+            Optional<User> userOpt = userRepository.findByTelegramId(userId);
+            boolean hasPhone = userOpt.isPresent() && userOpt.get().getPhone() != null && !userOpt.get().getPhone().isEmpty();
+
             // Создаем inline кнопки
             List<Map<String, Object>> attachments = new ArrayList<>();
             List<List<Map<String, Object>>> buttonRows = new ArrayList<>();
@@ -596,6 +767,14 @@ public class MaxUserBotPollingService {
             menuButton.put("text", "🌹 Заказать цветы");
             menuButton.put("url", "https://max.ru/id121602873440_bot?startapp");
             buttonRows.add(List.of(menuButton));
+
+            // Кнопка: Поделиться контактом (только если нет телефона)
+            if (!hasPhone) {
+                Map<String, Object> contactButton = new HashMap<>();
+                contactButton.put("type", "request_contact");
+                contactButton.put("text", "📱 Поделиться телефоном");
+                buttonRows.add(List.of(contactButton));
+            }
 
             // Кнопка: Связь с поддержкой (link тип для открытия URL)
             Map<String, Object> supportButton = new HashMap<>();
@@ -630,7 +809,7 @@ public class MaxUserBotPollingService {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
             restTemplate.postForEntity(url, entity, String.class);
-            log.debug("MAX User: Menu sent to userId={}", userId);
+            log.debug("MAX User: Menu sent to userId={}, hasPhone={}", userId, hasPhone);
 
         } catch (Exception e) {
             log.error("MAX User: Error sending menu: {}", e.getMessage(), e);
