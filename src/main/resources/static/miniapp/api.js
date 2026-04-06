@@ -63,19 +63,19 @@ class PizzaAPI {
     async enhancedAuthenticateWebApp(initDataRaw, phoneNumber) {
         const hasPhone = phoneNumber && phoneNumber.trim();
         console.log(`🔐 Enhanced authenticating via Telegram WebApp ${hasPhone ? 'with' : 'without'} phone...`);
-        
+
         try {
             const requestBody = {
                 initDataRaw: initDataRaw,
                 deviceId: this.getDeviceId(),
                 platform: 'telegram-miniapp'
             };
-            
+
             // Добавляем номер телефона только если он предоставлен
             if (hasPhone) {
                 requestBody.phoneNumber = phoneNumber.trim();
             }
-            
+
             const response = await this.makeRequest('/telegram-webapp/enhanced-auth', {
                 method: 'POST',
                 body: JSON.stringify(requestBody)
@@ -91,6 +91,50 @@ class PizzaAPI {
             }
         } catch (error) {
             console.error('❌ Enhanced WebApp authentication failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Авторизация через MAX ID (контакт) - fallback для MAX Mini App
+     *
+     * Используется когда WebApp авторизация не работает
+     *
+     * @param {number} maxUserId - MAX ID пользователя
+     * @param {string} username - Username в MAX (опционально)
+     * @param {string} firstName - Имя (опционально)
+     * @param {string} lastName - Фамилия (опционально)
+     * @param {string} phoneNumber - Номер телефона (опционально)
+     */
+    async authenticateByMaxContact(maxUserId, username, firstName, lastName, phoneNumber) {
+        console.log('📱 Authenticating via MAX Contact...');
+        console.log('📱 MAX User ID:', maxUserId);
+
+        try {
+            const requestBody = {
+                maxUserId: maxUserId,
+                username: username || null,
+                firstName: firstName || null,
+                lastName: lastName || null,
+                phoneNumber: phoneNumber || null
+            };
+
+            const response = await this.makeRequest('/max-webapp/auth/contact', {
+                method: 'POST',
+                body: JSON.stringify(requestBody)
+            });
+
+            if (response.token) {
+                this.authToken = response.token;
+                localStorage.setItem('pizzanat_token', response.token);
+                localStorage.setItem('max_user_id', maxUserId.toString());
+                console.log('✅ MAX Contact authentication successful, user ID:', response.userId);
+                return response;
+            } else {
+                throw new Error('No token received');
+            }
+        } catch (error) {
+            console.error('❌ MAX Contact authentication failed:', error);
             throw error;
         }
     }

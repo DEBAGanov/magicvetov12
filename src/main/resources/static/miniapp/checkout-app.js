@@ -347,9 +347,39 @@ class PizzaNatCheckoutApp {
             }
         }
 
-        // Если ничего не сработало, все равно запрашиваем номер телефона
-        console.log('🔧 Both auth methods failed, requesting phone for full enhanced auth...');
-        this.requestPhoneForEnhancedAuth();
+        // Если ничего не сработало, пробуем MAX Contact авторизацию
+        console.log('🔧 Both auth methods failed, trying MAX Contact auth...');
+        try {
+            // Проверяем, есть ли MAX ID в WebApp
+            const maxUserId = this.tg?.initDataUnsafe?.user?.id;
+            if (maxUserId) {
+                console.log('📱 Found MAX user ID in WebApp:', maxUserId);
+                const response = await this.api.authenticateByMaxContact(
+                    maxUserId,
+                    this.tg?.initDataUnsafe?.user?.username,
+                    this.tg?.initDataUnsafe?.user?.first_name,
+                    this.tg?.initDataUnsafe?.user?.last_name,
+                    null // номер телефона пока не передаем
+                );
+
+                if (response.token) {
+                    this.authToken = response.token;
+                    this.api.setAuthToken(this.authToken);
+                    localStorage.setItem('max_user_id', maxUserId.toString());
+                    console.log('✅ MAX Contact authentication successful, user ID:', response.userId);
+                    return;
+                } else {
+                    console.log('⚠️ MAX Contact auth failed, no token received');
+                }
+            } catch (error) {
+                console.error('❌ MAX Contact authentication failed:', error);
+                // Если MAX Contact тоже не сработал, показываем поле для ручного ввода
+                this.showManualPhoneInput();
+            }
+        } else {
+            console.log('⚠️ No MAX user ID found, requesting phone...');
+            this.requestPhoneForEnhancedAuth();
+        }
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.baganov.magicvetov.controller;
 
 import com.baganov.magicvetov.model.dto.auth.AuthResponse;
+import com.baganov.magicvetov.model.dto.max.MaxContactAuthRequest;
 import com.baganov.magicvetov.model.dto.max.MaxWebAppAuthRequest;
 import com.baganov.magicvetov.model.dto.max.MaxWebAppValidateRequest;
 import com.baganov.magicvetov.service.MaxWebAppService;
@@ -84,6 +85,43 @@ public class MaxWebAppController {
         } catch (Exception e) {
             log.error("Ошибка валидации MAX initData: {}", e.getMessage());
             return ResponseEntity.ok(false);
+        }
+    }
+
+    /**
+     * Авторизация через MAX ID (контакт)
+     *
+     * Используется когда WebApp авторизация через initData не работает
+     *
+     * @param request запрос с maxUserId
+     * @return AuthResponse с JWT токеном
+     */
+    @PostMapping("/auth/contact")
+    @Operation(
+            summary = "Авторизация через MAX ID",
+            description = "Авторизует пользователя по MAX ID без валидации initData. Используется как fallback."
+    )
+    public ResponseEntity<AuthResponse> authenticateByContact(
+            @RequestBody MaxContactAuthRequest request) {
+        log.info("📱 Авторизация через MAX ID: {}", request.getMaxUserId());
+
+        try {
+            AuthResponse response = maxWebAppService.authenticateByMaxId(
+                    request.getMaxUserId(),
+                    request.getUsername(),
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getPhoneNumber()
+            );
+            log.info("📱 Пользователь успешно авторизован через MAX ID: {}", response.getUserId());
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("📱 Ошибка авторизации через MAX ID: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("📱 Ошибка авторизации через MAX ID: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 

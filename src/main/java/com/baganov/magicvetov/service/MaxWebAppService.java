@@ -362,6 +362,16 @@ public class MaxWebAppService {
     }
 
     /**
+     * Генерация username для нового MAX пользователя (из authenticateByMaxId)
+     */
+    private String generateMaxUsername(String username, Long maxUserId) {
+        if (username != null && !username.isEmpty()) {
+            return MAX_USERNAME_PREFIX + username;
+        }
+        return MAX_USER_PREFIX + maxUserId;
+    }
+
+    /**
      * Построение telegramUsername для MAX пользователя
      */
     private String buildMaxTelegramUsername(MaxWebAppUser maxUser) {
@@ -439,5 +449,117 @@ public class MaxWebAppService {
 
         log.warn("Неизвестный формат номера телефона: '{}' (цифр: {})", phoneNumber, cleanPhone.length());
         return null;
+    }
+
+    // ==================== Авторизация через MAX ID ====================
+
+    /**
+     * Авторизация через MAX ID (без валидации initData)
+     *
+     * Используется как fallback когда WebApp авторизация не работает
+     *
+     * @param maxUserId   MAX ID пользователя
+     * @param username     username в MAX (опционально)
+     * @param firstName    Имя (опционально)
+     * @param lastName     Фамилия (опционально)
+     * @param phoneNumber   Номер телефона (опционально)
+     * @return AuthResponse с JWT токеном
+     */
+    @Transactional
+    public AuthResponse authenticateByMaxId(Long maxUserId, String username, String firstName, String lastName, String phoneNumber) {
+        log.info("📱 === АВТОРИЗАЦИЯ ЧЕРЕЗ MAX ID ===");
+        log.info("📱 maxUserId: {}", maxUserId);
+        log.info("📱 username: {}", username);
+        log.info("📱 firstName: {}", firstName);
+        log.info("📱 lastName: {}", lastName);
+        log.info("📱 phoneNumber: {}", phoneNumber != null ? "***" + phoneNumber.substring(phoneNumber.length() - 4) : "null");
+
+        if (maxUserId == null) {
+            throw new IllegalArgumentException("MAX User ID не может быть null");
+        }
+
+        // Ищем или создаем пользователя по MAX ID
+        Optional<User> existingUser = userRepository.findByTelegramId(maxUserId);
+
+        User user;
+        if (existingUser.isPresent()) {
+            user = existingUser.get();
+            log.info("📱 Найден существующий пользователь: userId={}, telegramId={}", user.getId(), maxUserId);
+
+            // Обновляем данные если предоставлены новые
+            boolean updated = false;
+
+            if (firstName != null && !firstName.isEmpty() && !firstName.equals(user.getFirstName())) {
+                user.setFirstName(firstName);
+                updated = true;
+            }
+            if (lastName != null && !lastName.isEmpty() && !lastName.equals(user.getLastName())) {
+                user.setLastName(lastName);
+                updated = true;
+            }
+            if (username != null && !username.isEmpty()) {
+                String maxUsername = MAX_USERNAME_PREFIX + username;
+                if (!maxUsername.equals(user.getTelegramUsername())) {
+                    user.setTelegramUsername(maxUsername);
+                    updated = true;
+                }
+            }
+            if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+                String formattedPhone = formatPhoneNumber(phoneNumber);
+                if (formattedPhone != null && !formattedPhone.equals(user.getPhone())) {
+                    user.setPhone(formattedPhone);
+                    user.setIsPhoneVerified(true);
+                    updated = true;
+                }
+            }
+            if (!user.getIsTelegramVerified()) {
+                user.setIsTelegramVerified(true);
+                updated = true;
+            }
+            if (updated) {
+                user.setUpdatedAt(LocalDateTime.now());
+                user = userRepository.save(user);
+                log.info("📱 Обновлены данные пользователя: userId={}", user.getId());
+            }
+        } else {
+            // Создаем нового пользователя
+            log.info("📱 Создание нового пользователя для MAX ID: {}", maxUserId);
+
+            String generatedUsername = generateMaxUsername(username, maxUserId);
+            String formattedPhone = phoneNumber != null ? formatPhoneNumber(phoneNumber) : null;
+
+            user = User.builder()
+                    .username(generatedUsername)
+                    .password(UUID.randomUUID().toString()) // Будет захешировано
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .phone(formattedPhone)
+                    .isPhoneVerified(formattedPhone != null)
+                    // Используем существующие поля для MAX
+                    .telegramId(maxUserId)
+                    .telegramUsername(username != null ? MAX_USERNAME_PREFIX + username : null)
+                    .isTelegramVerified(true) // MAX пользователь верифицирован
+                    .isActive(true)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            user = userRepository.save(user);
+            log.info("📱 Создан новый MAX пользователь: userId={}, telegramId={}", user.getId(), maxUserId);
+        }
+
+        // Генерируем JWT токен
+        String token = jwtService.generateToken(user);
+
+        log.info("📱 ✅ JWT токен сгенерирован для пользователя: userId={}", user.getId());
+
+        return AuthResponse.builder()
+                .token(token)
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
     }
 }
