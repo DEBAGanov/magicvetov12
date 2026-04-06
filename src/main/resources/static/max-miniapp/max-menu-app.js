@@ -388,8 +388,14 @@ class PizzaNatMaxMenuApp {
             }
 
             if (e.target.classList.contains('add-button')) {
+                // Add shake animation
+                e.target.classList.add('shake');
+                setTimeout(() => e.target.classList.remove('shake'), 400);
                 this.addToCart(product, 1);
             } else if (e.target.classList.contains('plus') && !e.target.classList.contains('cart-quantity-btn')) {
+                // Add shake animation
+                e.target.classList.add('shake');
+                setTimeout(() => e.target.classList.remove('shake'), 400);
                 this.addToCart(product, 1);
             } else if (e.target.classList.contains('minus') && !e.target.classList.contains('cart-quantity-btn')) {
                 this.removeFromCart(product.id, 1);

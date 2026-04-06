@@ -463,9 +463,15 @@ class PizzaNatMenuApp {
 
             if (e.target.classList.contains('add-button')) {
                 console.log('Adding product via ADD button');
+                // Add shake animation
+                e.target.classList.add('shake');
+                setTimeout(() => e.target.classList.remove('shake'), 400);
                 this.addToCart(product, 1);
             } else if (e.target.classList.contains('plus') && !e.target.classList.contains('cart-quantity-btn')) {
                 console.log('Adding product via PLUS button');
+                // Add shake animation
+                e.target.classList.add('shake');
+                setTimeout(() => e.target.classList.remove('shake'), 400);
                 this.addToCart(product, 1);
             } else if (e.target.classList.contains('minus') && !e.target.classList.contains('cart-quantity-btn')) {
                 console.log('Removing product via MINUS button');
