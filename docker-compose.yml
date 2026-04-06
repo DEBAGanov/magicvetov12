@@ -174,17 +174,16 @@ services:
       # MAX Bot API настройки (мессенджер MAX - российский аналог Telegram)
       # Документация: https://dev.max.ru/docs/webapps/introduction
       MAX_BOT_ENABLED: ${MAX_BOT_ENABLED:-true}
-      # Пользовательский бот ДИМБО: https://max.ru/id121603899498_bot
-      # ВАЖНО: Используем формат с точками для Spring Boot
-      MAX_BOT_USER-BOT-TOKEN: ${MAX_BOT_USER_BOT_TOKEN:-f9LHodD0cOKMx3YM-LVjPl5fvgW1zrL3Gd8TB0et9Z4AXB1_v0jkTV26MDMTeGZ6sj4TZnOJOif8p7jDxwmZ}
-      MAX_BOT_USER-BOT-USERNAME: ${MAX_BOT_USER_BOT_USERNAME:-id121603899498_bot}
-      # Административный бот ДИМБО Админ: https://max.ru/id121603899498_1_bot
-      MAX_BOT_ADMIN-BOT-TOKEN: ${MAX_BOT_ADMIN_BOT_TOKEN:-f9LHodD0cOKGjBhKOiTerO4tix7cID248uek0EkbqWEbEUALnKMRZMRw8XiZheOVmhVGFW_P6Ge9XMi5Lxph}
-      MAX_BOT_ADMIN-BOT-USERNAME: ${MAX_BOT_ADMIN_BOT_USERNAME:-id121603899498_1_bot}
+      # Пользовательский бот: https://max.ru/id121602873440_bot
+      MAX_BOT_USER-BOT-TOKEN: ${MAX_BOT_USER_BOT_TOKEN:-f9LHodD0cOLzJ0LMIMFeCLazQLKZPMVqsS2viXz8LkkHF6BsPRUUeqznyh7Kpfoe8ymLg--NbExQVjcVNLV_}
+      MAX_BOT_USER-BOT-USERNAME: ${MAX_BOT_USER_BOT_USERNAME:-id121602873440_bot}
+      # Административный бот: https://max.ru/id121602873440_1_bot
+      MAX_BOT_ADMIN-BOT-TOKEN: ${MAX_BOT_ADMIN_BOT_TOKEN:-f9LHodD0cOIqPfI8nfMknYxstgytGgaMkDrqN07JjsIizv8YDHthh3Srtvg299WfN-uBuokKMwN_bYaNfntH}
+      MAX_BOT_ADMIN-BOT-USERNAME: ${MAX_BOT_ADMIN_BOT_USERNAME:-id121602873440_1_bot}
       # Настройки API
       MAX_BOT_API-URL: ${MAX_BOT_API_URL:-https://platform-api.max.ru}
       # Chat ID для административных уведомлений
-      MAX_BOT_ADMIN-CHAT-ID: ${MAX_BOT_ADMIN_CHAT_ID:-213154550}
+      MAX_BOT_ADMIN-CHAT-ID: ${MAX_BOT_ADMIN_CHAT_ID:-230947976}
       # Webhook URL для Admin Bot - MAX API будет отправлять события на этот URL
       MAX_BOT_ADMIN-WEBHOOK-URL: ${MAX_BOT_ADMIN_WEBHOOK_URL:-https://api.magiacvetov12.ru/max-admin/}
       # Таймауты и повторные попытки
