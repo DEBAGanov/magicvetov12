@@ -1413,18 +1413,20 @@ public class MaxAdminBotService {
         }
 
         // Регулярное выражение для поиска URL картинок
+        // Поддерживает: jpg, jpeg, png, gif, webp (с query параметрами)
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
-                "(https?://[^\\s]+?\\.(?:jpg|jpeg|png|gif)(?:\\?[^\\s]*)?)",
+                "(https?://[^\\s]+?\\.(?:jpg|jpeg|png|gif|webp)(?:\\?[^\\s]*)?)",
                 java.util.regex.Pattern.CASE_INSENSITIVE
         );
         java.util.regex.Matcher matcher = pattern.matcher(message);
 
         if (matcher.find()) {
             String url = matcher.group(1);
-            log.debug("📷 MAX: Найден URL фото: {}", url);
+            log.info("📷 MAX: Найден URL фото: {}", url);
             return url;
         }
 
+        log.info("📷 MAX: URL фото не найден в сообщении: {}", message.substring(0, Math.min(100, message.length())));
         return null;
     }
 
