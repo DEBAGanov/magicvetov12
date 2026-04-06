@@ -49,7 +49,7 @@ public class SecurityConfig {
     @Value("${app.security.disable-jwt-auth:false}")
     private boolean disableJwtAuth;
 
-    @Value("${app.cors.allowed-origins:https://magicvetov.ru,https://www.magicvetov12.ru,https://api.magicvetov.ru,https://api.magiacvetov12.ru/*,http://localhost:5173,http://localhost:3000,http://localhost:8080,https://api.dimbopizza.ru,https://dimbopizza.ru,https://dimbopizza.ru/*,https://t.me/DIMBOpizzaBot/*,https://web.telegram.org/k/#@DIMBOpizzaBot,https://max.ru,https://m.max.ru,https://web.max.ru,https://app.max.ru}")
+    @Value("${app.cors.allowed-origins:https://magicvetov.ru,https://www.magicvetov12.ru,https://api.magicvetov.ru,https://api.magiacvetov12.ru,http://localhost:5173,http://localhost:3000,http://localhost:8080,https://api.dimbopizza.ru,https://dimbopizza.ru,https://dimbopizza.ru/*,https://t.me/DIMBOpizzaBot/*,https://web.telegram.org/k/#@DIMBOpizzaBot,https://max.ru,https://m.max.ru,https://web.max.ru,https://app.max.ru}")
     private String[] corsAllowedOrigins;
 
     @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS,PATCH}")
