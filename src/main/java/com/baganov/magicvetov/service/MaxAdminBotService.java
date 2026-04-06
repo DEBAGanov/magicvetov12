@@ -1443,12 +1443,12 @@ public class MaxAdminBotService {
         // Создаем кнопки
         List<List<Map<String, Object>>> buttonRows = new ArrayList<>();
 
-        // Строка 1: 🍕 Открыть меню - открывает MAX Mini App
+        // Строка 1: 🌹 Заказать букет - открывает MAX Mini App
         Map<String, Object> menuButton = new HashMap<>();
         menuButton.put("type", "link");
-        menuButton.put("text", "🍕 Открыть меню");
+        menuButton.put("text", "🌹 Заказать букет");
         // URL для MAX Mini App
-        menuButton.put("url", "https://api.dimbopizza.ru/max-miniapp/menu.html");
+        menuButton.put("url", "https://api.magiacvetov12.ru/max-miniapp/menu.html");
         buttonRows.add(List.of(menuButton));
 
         // Строка 2: 📞 Связь с поддержкой - открывает чат с ботом
@@ -1480,8 +1480,8 @@ public class MaxAdminBotService {
         // Строка 1: 🍕 Открыть меню - открывает MAX Mini App
         Map<String, Object> menuButton = new HashMap<>();
         menuButton.put("type", "link");
-        menuButton.put("text", "🍕 Открыть меню");
-        menuButton.put("url", "https://api.dimbopizza.ru/max-miniapp/menu.html");
+        menuButton.put("text", "🌹 Заказать букет");
+        menuButton.put("url", "https://api.magiacvetov12.ru/max-miniapp/menu.html");
         buttonRows.add(List.of(menuButton));
 
         // Строка 2: 📞 Связь с поддержкой - открывает чат с ботом

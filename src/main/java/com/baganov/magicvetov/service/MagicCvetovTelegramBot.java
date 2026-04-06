@@ -417,8 +417,8 @@ public class MagicCvetovTelegramBot extends TelegramLongPollingBot {
     private void handleMenuCommand(Long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText("🍕 *Добро пожаловать в DIMBO Pizza!*\n\n" +
-                "Откройте наше меню для заказа 🚀\n\n" +
+        message.setText("🍕 *Добро пожаловать в Магию Цветов!*\n\n" +
+                "Откройте наше меню для заказа цветов 🚀\n\n" +
                 "_Для лучшего опыта используйте мобильную версию Telegram_");
         message.setParseMode("Markdown");
 
@@ -427,14 +427,14 @@ public class MagicCvetovTelegramBot extends TelegramLongPollingBot {
         
         // Кнопка меню
         InlineKeyboardButton menuButton = InlineKeyboardButton.builder()
-                .text("🍕 Открыть меню")
-                .url("https://api.dimbopizza.ru/miniapp/menu")
+                .text("🌹 Заказать букет")
+                .url("https://api.magiacvetov12.ru/miniapp/menu.html")
                 .build();
                 
         // Кнопка заказа (главная для кросс-платформенной авторизации)
         InlineKeyboardButton orderButton = InlineKeyboardButton.builder()
                 .text("🛒 Заказать")
-                .url("https://api.dimbopizza.ru/miniapp/checkout.html")
+                .url("https://api.magiacvetov12.ru/miniapp/checkout.html")
                 .build();
 
         keyboard.setKeyboard(List.of(

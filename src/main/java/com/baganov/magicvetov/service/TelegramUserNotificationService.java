@@ -555,9 +555,9 @@ public class TelegramUserNotificationService {
 
         // Строка 1: 🍕 Открыть меню - открывает Telegram Mini App
         Map<String, Object> menuButton = new HashMap<>();
-        menuButton.put("text", "🍕 Открыть меню");
+        menuButton.put("text", "🌹 Заказать букет");
         // Используем web_app для открытия Mini App
-        menuButton.put("web_app", Map.of("url", "https://api.dimbopizza.ru/miniapp/menu.html"));
+        menuButton.put("web_app", Map.of("url", "https://api.magiacvetov12.ru/miniapp/menu.html"));
         buttons.add(List.of(menuButton));
 
         // Строка 2: 📞 Связь с поддержкой - открывает чат с ботом
