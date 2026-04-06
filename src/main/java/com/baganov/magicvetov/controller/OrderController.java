@@ -37,29 +37,58 @@ public class OrderController {
             HttpServletRequest httpRequest,
             Authentication authentication) {
 
+        // === ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ АВТОРИЗАЦИИ ===
+        log.info("🛒 === СОЗДАНИЕ ЗАКАЗА ===");
+        log.info("🛒 Authentication object: {}", authentication);
+        log.info("🛒 Authentication is null: {}", authentication == null);
+
+        if (authentication != null) {
+            log.info("🛒 Authentication.isAuthenticated(): {}", authentication.isAuthenticated());
+            log.info("🛒 Authentication.getPrincipal(): {}", authentication.getPrincipal());
+            log.info("🛒 Authentication.getPrincipal() class: {}",
+                    authentication.getPrincipal() != null ? authentication.getPrincipal().getClass().getName() : "null");
+            log.info("🛒 Authentication.getAuthorities(): {}", authentication.getAuthorities());
+        }
+
+        // Проверяем заголовки авторизации
+        String authHeader = httpRequest.getHeader("Authorization");
+        log.info("🛒 Authorization header: {}", authHeader != null ? (authHeader.substring(0, Math.min(20, authHeader.length())) + "...") : "null");
+
         Integer userId = getUserId(authentication);
+        log.info("🛒 Result userId from getUserId(): {}", userId);
 
         String sessionId = null;
         if (userId == null) {
+            log.warn("🛒 ⚠️ userId is NULL! Order will be created WITHOUT user binding!");
+            log.warn("🛒 ⚠️ This means NO notifications will be sent to user about order status changes!");
+
             // Сначала проверяем заголовок X-Session-Id (для MAX mini app)
             sessionId = httpRequest.getHeader("X-Session-Id");
-            log.debug("SessionId from X-Session-Id header: {}", sessionId);
+            log.info("🛒 SessionId from X-Session-Id header: {}", sessionId);
 
             // Если заголовка нет, проверяем cookie
             if (sessionId == null) {
                 jakarta.servlet.http.Cookie[] cookies = httpRequest.getCookies();
                 if (cookies != null) {
+                    log.info("🛒 Cookies count: {}", cookies.length);
                     for (jakarta.servlet.http.Cookie cookie : cookies) {
+                        log.debug("🛒 Cookie: {} = {}", cookie.getName(), cookie.getValue());
                         if ("CART_SESSION_ID".equals(cookie.getName())) {
                             sessionId = cookie.getValue();
                             break;
                         }
                     }
+                } else {
+                    log.info("🛒 No cookies in request");
                 }
             }
+            log.info("🛒 Final sessionId: {}", sessionId);
+        } else {
+            log.info("🛒 ✅ User is authenticated, userId: {}", userId);
         }
 
         OrderDTO order = orderService.createOrder(userId, sessionId, request);
+        log.info("🛒 === ЗАКАЗ СОЗДАН #{} === (userId: {}, sessionId: {})", order.getId(), userId, sessionId);
         return ResponseEntity.ok(order);
     }
 

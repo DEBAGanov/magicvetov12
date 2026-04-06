@@ -526,11 +526,11 @@ public class MaxUserBotPollingService {
      */
     private void handleMenuCommand(Long userId, String userName) {
         String menuMessage = String.format("""
-                👋 **Привет, %s!**
+                 **Привет, %s!**
 
-                🍕 **Магия Цветов - это приложение для заказа цветов в Волжске.**
+                🌹 🌷 🌺 **Магия Цветов - это приложение для заказа цветов в Волжске.**
 
-                Доставка с 07:30 до 20:00.
+                Доставка 🌹 🌷 🌺 с 07:30 до 20:00.
 
                 📞 тел. +7 (964) 861-23-70
 
@@ -562,7 +562,7 @@ public class MaxUserBotPollingService {
                 `/help` - Показать эту справку
 
                 **Функции:**
-                • 🍕 Заказ цветов через Mini App
+                • 🌹 🌷 🌺 Заказ цветов через Mini App
                 • 📱 Получение уведомлений о статусе заказов
                 • 📞 Связь с поддержкой через +7 (964) 861-23-70
                 """;
@@ -593,7 +593,7 @@ public class MaxUserBotPollingService {
             // Кнопка: Открыть меню (link тип для открытия URL)
             Map<String, Object> menuButton = new HashMap<>();
             menuButton.put("type", "link");
-            menuButton.put("text", "🌹 Заказать букет");
+            menuButton.put("text", "🌹 Заказать цветы");
             menuButton.put("url", "https://max.ru/id121602873440_bot?startapp");
             buttonRows.add(List.of(menuButton));
 
