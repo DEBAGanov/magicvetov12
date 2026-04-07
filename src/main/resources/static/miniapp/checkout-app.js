@@ -8,7 +8,7 @@ function trackEcommerce(eventType, data) {
     try {
         if (typeof ym !== 'undefined') {
             console.log('📊 YM E-commerce tracking:', eventType, data);
-            ym(103585127, 'reachGoal', eventType, data);
+            ym(108401065, 'reachGoal', eventType, data);
             
             // Отправляем данные в dataLayer для электронной коммерции
             window.dataLayer = window.dataLayer || [];
