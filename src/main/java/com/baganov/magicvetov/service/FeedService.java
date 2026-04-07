@@ -2,6 +2,7 @@ package com.baganov.magicvetov.service;
 
 import com.baganov.magicvetov.entity.Category;
 import com.baganov.magicvetov.entity.Product;
+import com.baganov.magicvetov.entity.ProductImage;
 import com.baganov.magicvetov.repository.CategoryRepository;
 import com.baganov.magicvetov.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,9 @@ public class FeedService {
     @Value("${app.shop-company:Магия Цветов}")
     private String shopCompany;
 
+    @Value("${app.feed.product-url:https://max.ru/id121602873440_bot}")
+    private String productFeedUrl;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     /**
@@ -53,7 +57,7 @@ public class FeedService {
                 .filter(c -> c.getIsActive() != null && c.getIsActive())
                 .collect(Collectors.toList());
 
-        // Получаем все доступные товары
+        // Получаем все доступные товары с изображениями
         List<Product> products = productRepository.findAll().stream()
                 .filter(Product::isAvailable)
                 .collect(Collectors.toList());
@@ -72,7 +76,7 @@ public class FeedService {
         // Информация о магазине
         yml.append("<shop>\n");
         yml.append("<name>").append(escapeXml(shopName)).append("</name>\n");
-        yml.append("<url>").append(escapeXml(baseUrl)).append("</url>\n");
+        yml.append("<url>").append(escapeXml(productFeedUrl)).append("</url>\n");
         yml.append("<company>").append(escapeXml(shopCompany)).append("</company>\n");
 
         // Категории
@@ -121,9 +125,8 @@ public class FeedService {
         // Название
         offer.append("<name>").append(escapeXml(product.getName())).append("</name>\n");
 
-        // URL товара
-        String productUrl = baseUrl + "/product/" + product.getId();
-        offer.append("<url>").append(escapeXml(productUrl)).append("</url>\n");
+        // URL товара - ссылка на MAX бот
+        offer.append("<url>").append(escapeXml(productFeedUrl)).append("</url>\n");
 
         // Цена
         offer.append("<price>").append(price.intValue()).append("</price>\n");
@@ -141,14 +144,21 @@ public class FeedService {
             offer.append("<categoryId>").append(product.getCategory().getId()).append("</categoryId>\n");
         }
 
-        // Изображение
+        // Все изображения товара
+        // Сначала основное изображение
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-            String imageUrl = product.getImageUrl();
-            // Если URL относительный, добавляем базовый URL
-            if (!imageUrl.startsWith("http")) {
-                imageUrl = baseUrl + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
-            }
+            String imageUrl = getFullImageUrl(product.getImageUrl());
             offer.append("<picture>").append(escapeXml(imageUrl)).append("</picture>\n");
+        }
+
+        // Затем дополнительные изображения
+        if (product.getAdditionalImages() != null) {
+            for (ProductImage img : product.getAdditionalImages()) {
+                if (img.getImageUrl() != null && !img.getImageUrl().isEmpty()) {
+                    String imageUrl = getFullImageUrl(img.getImageUrl());
+                    offer.append("<picture>").append(escapeXml(imageUrl)).append("</picture>\n");
+                }
+            }
         }
 
         // Краткое описание
@@ -175,6 +185,21 @@ public class FeedService {
         offer.append("</offer>\n");
 
         return offer.toString();
+    }
+
+    /**
+     * Получение полного URL изображения
+     */
+    private String getFullImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return null;
+        }
+        // Если URL уже полный (начинается с http), возвращаем как есть
+        if (imageUrl.startsWith("http")) {
+            return imageUrl;
+        }
+        // Иначе добавляем базовый URL
+        return baseUrl + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
     }
 
     /**
