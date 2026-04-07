@@ -159,7 +159,10 @@ public class SecurityConfig {
             "/api/v1/orders",
             "/api/v1/orders/**",
             "/api/v1/admin/**",
-            "/debug/**"
+            "/debug/**",
+            // YAML Feed для интеграции с внешними сервисами
+            "/feed",
+            "/feed/**"
     };
 
     @Bean
