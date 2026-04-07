@@ -53,4 +53,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
         Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
         Optional<Product> findByName(String name);
+
+        @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.additionalImages WHERE p.isAvailable = true")
+        List<Product> findAllAvailableWithImages();
 }

@@ -9,12 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Сервис для генерации XML/YML фидов товаров
@@ -49,18 +50,17 @@ public class FeedService {
      *
      * @return XML содержимое фида
      */
+    @Transactional(readOnly = true)
     public String generateYandexMarketFeed() {
         log.info("🔄 Генерация YML фида...");
 
         // Получаем все активные категории
         List<Category> categories = categoryRepository.findAll().stream()
                 .filter(c -> c.getIsActive() != null && c.getIsActive())
-                .collect(Collectors.toList());
+                .toList();
 
-        // Получаем все доступные товары с изображениями
-        List<Product> products = productRepository.findAll().stream()
-                .filter(Product::isAvailable)
-                .collect(Collectors.toList());
+        // Получаем все доступные товары с изображениями (используем специальный запрос с JOIN FETCH)
+        List<Product> products = productRepository.findAllAvailableWithImages();
 
         log.info("📊 Найдено {} категорий и {} товаров для фида", categories.size(), products.size());
 
@@ -145,20 +145,26 @@ public class FeedService {
         }
 
         // Все изображения товара
-        // Сначала основное изображение
+        List<String> allImages = new ArrayList<>();
+
+        // Основное изображение
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-            String imageUrl = getFullImageUrl(product.getImageUrl());
-            offer.append("<picture>").append(escapeXml(imageUrl)).append("</picture>\n");
+            allImages.add(product.getImageUrl());
         }
 
-        // Затем дополнительные изображения
+        // Дополнительные изображения
         if (product.getAdditionalImages() != null) {
             for (ProductImage img : product.getAdditionalImages()) {
                 if (img.getImageUrl() != null && !img.getImageUrl().isEmpty()) {
-                    String imageUrl = getFullImageUrl(img.getImageUrl());
-                    offer.append("<picture>").append(escapeXml(imageUrl)).append("</picture>\n");
+                    allImages.add(img.getImageUrl());
                 }
             }
+        }
+
+        // Добавляем все изображения в фид
+        for (String imageUrl : allImages) {
+            String fullUrl = getFullImageUrl(imageUrl);
+            offer.append("<picture>").append(escapeXml(fullUrl)).append("</picture>\n");
         }
 
         // Краткое описание
@@ -172,12 +178,12 @@ public class FeedService {
             offer.append("<description>").append(escapeXml(product.getDescription())).append("</description>\n");
         }
 
-        // Вес (если указан) - в граммах для YML
+        // Вес (если указан)
         if (product.getWeight() != null) {
             offer.append("<weight>").append(product.getWeight()).append("</weight>\n");
         }
 
-        // Скидка как vendor (используем поле для хранения процента скидки)
+        // Скидка как vendor
         if (product.getDiscountPercent() != null && product.getDiscountPercent() > 0) {
             offer.append("<vendor>Скидка ").append(product.getDiscountPercent()).append("%</vendor>\n");
         }
@@ -192,14 +198,15 @@ public class FeedService {
      */
     private String getFullImageUrl(String imageUrl) {
         if (imageUrl == null || imageUrl.isEmpty()) {
-            return null;
+            return "";
         }
         // Если URL уже полный (начинается с http), возвращаем как есть
         if (imageUrl.startsWith("http")) {
             return imageUrl;
         }
-        // Иначе добавляем базовый URL
-        return baseUrl + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
+        // Иначе добавляем базовый URL S3
+        String s3BaseUrl = "https://s3.twcstorage.ru/f9c8e17a-magicvetov-products";
+        return s3BaseUrl + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
     }
 
     /**
