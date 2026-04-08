@@ -63,4 +63,31 @@ public class FeedController {
     public ResponseEntity<String> getRootFeed() {
         return getYandexBusinessFeed();
     }
+
+    /**
+     * Получение XML фида товаров для Авито
+     *
+     * URL: /feed/avito.xml
+     *
+     * @return XML содержимое фида
+     */
+    @GetMapping(value = "/avito.xml", produces = "application/xml;charset=UTF-8")
+    @Operation(
+            summary = "Получение XML фида для Авито",
+            description = "Возвращает список всех доступных товаров в формате XML для Авито"
+    )
+    public ResponseEntity<String> getAvitoFeed() {
+        log.info("📥 Запрос Avito фида товаров (avito.xml)");
+
+        try {
+            String xmlContent = feedService.generateAvitoFeed();
+            log.info("✅ Avito фид успешно сгенерирован");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("application/xml;charset=UTF-8"))
+                    .body(xmlContent);
+        } catch (Exception e) {
+            log.error("❌ Ошибка генерации Avito фида: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -20,8 +21,9 @@ import java.util.List;
 /**
  * Сервис для генерации XML/YML фидов товаров
  *
- * Поддерживает формат Yandex Market YML для интеграции с внешними сервисами
- * Документация: https://yandex.ru/support/marketplace/assortment/guide.html
+ * Поддерживает форматы:
+ * - Yandex Market YML
+ * - Avito XML
  */
 @Slf4j
 @Service
@@ -43,43 +45,44 @@ public class FeedService {
     @Value("${app.feed.product-url:https://max.ru/id121602873440_bot}")
     private String productFeedUrl;
 
+    @Value("${app.avito.manager-name:Магия Цветов}")
+    private String avitoManagerName;
+
+    @Value("${app.avito.contact-phone:}")
+    private String avitoContactPhone;
+
+    @Value("${app.avito.address:Казань}")
+    private String avitoAddress;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+    private static final DateTimeFormatter AVITO_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * Генерация YML фида в формате Yandex Market
-     *
-     * @return XML содержимое фида
      */
     @Transactional(readOnly = true)
     public String generateYandexMarketFeed() {
         log.info("🔄 Генерация YML фида...");
 
-        // Получаем все активные категории
         List<Category> categories = categoryRepository.findAll().stream()
                 .filter(c -> c.getIsActive() != null && c.getIsActive())
                 .toList();
 
-        // Получаем все доступные товары с изображениями (используем специальный запрос с JOIN FETCH)
         List<Product> products = productRepository.findAllAvailableWithImages();
 
         log.info("📊 Найдено {} категорий и {} товаров для фида", categories.size(), products.size());
 
         StringBuilder yml = new StringBuilder();
-
-        // XML заголовок
         yml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 
-        // Дата генерации в формате ISO 8601 с часовым поясом
         String currentDate = OffsetDateTime.now().format(DATE_FORMATTER);
         yml.append("<yml_catalog date=\"").append(currentDate).append("\">\n");
 
-        // Информация о магазине
         yml.append("<shop>\n");
         yml.append("<name>").append(escapeXml(shopName)).append("</name>\n");
         yml.append("<url>").append(escapeXml(productFeedUrl)).append("</url>\n");
         yml.append("<company>").append(escapeXml(shopCompany)).append("</company>\n");
 
-        // Категории
         yml.append("<categories>\n");
         for (Category category : categories) {
             yml.append("<category id=\"").append(category.getId()).append("\"");
@@ -87,15 +90,13 @@ public class FeedService {
         }
         yml.append("</categories>\n");
 
-        // Валюты
         yml.append("<currencies>\n");
         yml.append("<currency id=\"RUR\" rate=\"1\"/>\n");
         yml.append("</currencies>\n");
 
-        // Товары (offers)
         yml.append("<offers>\n");
         for (Product product : products) {
-            yml.append(buildOfferYml(product));
+            yml.append(buildYandexOffer(product));
         }
         yml.append("</offers>\n");
 
@@ -107,83 +108,178 @@ public class FeedService {
     }
 
     /**
-     * Генерация YML для отдельного товара
+     * Генерация XML фида для Авито
+     *
+     * Документация: https://www.avito.ru/autoload/documentation
      */
-    private String buildOfferYml(Product product) {
-        StringBuilder offer = new StringBuilder();
+    @Transactional(readOnly = true)
+    public String generateAvitoFeed() {
+        log.info("🔄 Генерация Avito фида...");
+
+        List<Product> products = productRepository.findAllAvailableWithImages();
+
+        log.info("📊 Найдено {} товаров для Avito фида", products.size());
+
+        StringBuilder xml = new StringBuilder();
+        xml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+        xml.append("<Ads formatVersion=\"3\" target=\"Avito.ru\">\n");
+
+        for (Product product : products) {
+            xml.append(buildAvitoAd(product));
+        }
+
+        xml.append("</Ads>\n");
+
+        log.info("✅ Avito фид успешно сгенерирован: {} символов, {} товаров", xml.length(), products.size());
+        return xml.toString();
+    }
+
+    /**
+     * Генерация объявления для Авито
+     */
+    private String buildAvitoAd(Product product) {
+        StringBuilder ad = new StringBuilder();
 
         // Определяем цену (со скидкой или обычную)
         BigDecimal price = product.getDiscountedPrice() != null
                 ? product.getDiscountedPrice()
                 : product.getPrice();
 
-        // Старая цена (если есть скидка)
+        // Даты: начало сейчас, конец через 30 дней
+        LocalDate dateBegin = LocalDate.now();
+        LocalDate dateEnd = dateBegin.plusMonths(1);
+
+        ad.append("<Ad>\n");
+
+        // ID - уникальный идентификатор
+        ad.append("<Id>").append(product.getId()).append("</Id>\n");
+
+        // Дата начала и окончания
+        ad.append("<DateBegin>").append(dateBegin).append("</DateBegin>\n");
+        ad.append("<DateEnd>").append(dateEnd).append("</DateEnd>\n");
+
+        // Тип размещения
+        ad.append("<ListingFee>Package</ListingFee>\n");
+
+        // Статус объявления
+        ad.append("<AdStatus>Free</AdStatus>\n");
+
+        // Разрешить email
+        ad.append("<AllowEmail>Да</AllowEmail>\n");
+
+        // Контактная информация
+        ad.append("<ManagerName>").append(escapeXml(avitoManagerName)).append("</ManagerName>\n");
+        if (avitoContactPhone != null && !avitoContactPhone.isEmpty()) {
+            ad.append("<ContactPhone>").append(escapeXml(avitoContactPhone)).append("</ContactPhone>\n");
+        }
+        ad.append("<Address>").append(escapeXml(avitoAddress)).append("</Address>\n");
+
+        // Категория - для букетов используем "Букеты"
+        String categoryName = product.getCategory() != null ? product.getCategory().getName() : "Букеты";
+        ad.append("<Category>").append(escapeXml(categoryName)).append("</Category>\n");
+
+        // Тип операции
+        ad.append("<OperationType>Продам</OperationType>\n");
+
+        // Цена
+        ad.append("<Price>").append(price.intValue()).append("</Price>\n");
+
+        // Название
+        ad.append("<Title>").append(escapeXml(product.getName())).append("</Title>\n");
+
+        // Описание
+        String description = buildAvitoDescription(product);
+        ad.append("<Description>").append(escapeXml(description)).append("</Description>\n");
+
+        // Изображения
+        List<String> allImages = getAllProductImages(product);
+        for (String imageUrl : allImages) {
+            String fullUrl = getFullImageUrl(imageUrl);
+            ad.append("<Image url=\"").append(escapeXml(fullUrl)).append("\"/>\n");
+        }
+
+        // Состояние - новое
+        ad.append("<Condition>Новое</Condition>\n");
+
+        ad.append("</Ad>\n");
+
+        return ad.toString();
+    }
+
+    /**
+     * Формирование описания для Авито
+     */
+    private String buildAvitoDescription(Product product) {
+        StringBuilder desc = new StringBuilder();
+
+        desc.append(product.getName()).append("\n\n");
+
+        if (product.getDescription() != null && !product.getDescription().isEmpty()) {
+            desc.append(product.getDescription()).append("\n\n");
+        }
+
+        // Добавляем информацию о скидке
+        if (product.getDiscountPercent() != null && product.getDiscountPercent() > 0) {
+            desc.append("🔥 СКИДКА ").append(product.getDiscountPercent()).append("%!\n");
+        }
+
+        // Добавляем вес если есть
+        if (product.getWeight() != null) {
+            desc.append("Размер: ").append(product.getWeight()).append(" г\n");
+        }
+
+        desc.append("\n📞 Заказать можно через нашего бота в MAX:\n");
+        desc.append(productFeedUrl).append("\n\n");
+
+        desc.append("Доставка по Казани. Самовывоз возможен.\n");
+        desc.append("Звоните или пишите!");
+
+        return desc.toString();
+    }
+
+    /**
+     * Генерация YML оффера для Yandex
+     */
+    private String buildYandexOffer(Product product) {
+        StringBuilder offer = new StringBuilder();
+
+        BigDecimal price = product.getDiscountedPrice() != null
+                ? product.getDiscountedPrice()
+                : product.getPrice();
+
         BigDecimal oldPrice = product.getDiscountedPrice() != null ? product.getPrice() : null;
 
         offer.append("<offer id=\"").append(product.getId()).append("\">\n");
-
-        // Название
         offer.append("<name>").append(escapeXml(product.getName())).append("</name>\n");
-
-        // URL товара - ссылка на MAX бот
         offer.append("<url>").append(escapeXml(productFeedUrl)).append("</url>\n");
-
-        // Цена
         offer.append("<price>").append(price.intValue()).append("</price>\n");
 
-        // Старая цена (если есть скидка)
         if (oldPrice != null) {
             offer.append("<oldprice>").append(oldPrice.intValue()).append("</oldprice>\n");
         }
 
-        // Валюта
         offer.append("<currencyId>RUR</currencyId>\n");
 
-        // Категория
         if (product.getCategory() != null) {
             offer.append("<categoryId>").append(product.getCategory().getId()).append("</categoryId>\n");
         }
 
-        // Все изображения товара
-        List<String> allImages = new ArrayList<>();
-
-        // Основное изображение
-        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-            allImages.add(product.getImageUrl());
-        }
-
-        // Дополнительные изображения
-        if (product.getAdditionalImages() != null) {
-            for (ProductImage img : product.getAdditionalImages()) {
-                if (img.getImageUrl() != null && !img.getImageUrl().isEmpty()) {
-                    allImages.add(img.getImageUrl());
-                }
-            }
-        }
-
-        // Добавляем все изображения в фид
+        List<String> allImages = getAllProductImages(product);
         for (String imageUrl : allImages) {
             String fullUrl = getFullImageUrl(imageUrl);
             offer.append("<picture>").append(escapeXml(fullUrl)).append("</picture>\n");
         }
 
-        // Краткое описание
         if (product.getDescription() != null && !product.getDescription().isEmpty()) {
             String shortDesc = truncate(product.getDescription(), 150);
             offer.append("<shortDescription>").append(escapeXml(shortDesc)).append("</shortDescription>\n");
-        }
-
-        // Полное описание
-        if (product.getDescription() != null && !product.getDescription().isEmpty()) {
             offer.append("<description>").append(escapeXml(product.getDescription())).append("</description>\n");
         }
 
-        // Вес (если указан)
         if (product.getWeight() != null) {
             offer.append("<weight>").append(product.getWeight()).append("</weight>\n");
         }
 
-        // Скидка как vendor
         if (product.getDiscountPercent() != null && product.getDiscountPercent() > 0) {
             offer.append("<vendor>Скидка ").append(product.getDiscountPercent()).append("%</vendor>\n");
         }
@@ -194,17 +290,36 @@ public class FeedService {
     }
 
     /**
+     * Получение всех изображений товара
+     */
+    private List<String> getAllProductImages(Product product) {
+        List<String> allImages = new ArrayList<>();
+
+        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            allImages.add(product.getImageUrl());
+        }
+
+        if (product.getAdditionalImages() != null) {
+            for (ProductImage img : product.getAdditionalImages()) {
+                if (img.getImageUrl() != null && !img.getImageUrl().isEmpty()) {
+                    allImages.add(img.getImageUrl());
+                }
+            }
+        }
+
+        return allImages;
+    }
+
+    /**
      * Получение полного URL изображения
      */
     private String getFullImageUrl(String imageUrl) {
         if (imageUrl == null || imageUrl.isEmpty()) {
             return "";
         }
-        // Если URL уже полный (начинается с http), возвращаем как есть
         if (imageUrl.startsWith("http")) {
             return imageUrl;
         }
-        // Иначе добавляем базовый URL S3
         String s3BaseUrl = "https://s3.twcstorage.ru/f9c8e17a-magicvetov-products";
         return s3BaseUrl + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
     }
