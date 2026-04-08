@@ -6,7 +6,7 @@
 
 ## ID пикселя VK
 
-**Pixel ID:** `3695469`
+**Pixel ID:** `3756511`
 
 ## Интегрированные файлы
 
@@ -28,7 +28,7 @@
 <!-- VK Pixel (Top.Mail.Ru counter) -->
 <script type="text/javascript">
     var _tmr = window._tmr || (window._tmr = []);
-    _tmr.push({id: "3695469", type: "pageView", start: (new Date()).getTime()});
+    _tmr.push({id: "3756511", type: "pageView", start: (new Date()).getTime()});
     (function (d, w, id) {
       if (d.getElementById(id)) return;
       var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
@@ -37,7 +37,7 @@
       if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
     })(document, window, "tmr-code");
 </script>
-<noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3695469;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
+<noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3756511;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
 <!-- /VK Pixel (Top.Mail.Ru counter) -->
 ```
 
@@ -53,7 +53,7 @@ function trackVKEcommerce(goal, data) {
             console.log('📊 VK E-commerce tracking:', goal, data);
             _tmr.push({
                 type: "reachGoal",
-                id: "3695469",
+                id: "3756511",
                 goal: goal,
                 value: data.value || undefined,
                 params: data.params || {}
@@ -162,7 +162,7 @@ function trackPurchase(orderData, items) {
 ```javascript
 _tmr.push({
     type: "reachGoal",
-    id: "3695469",
+    id: "3756511",
     goal: "event_name",
     value: 1200,  // стоимость заказа/товара (опционально)
     params: {

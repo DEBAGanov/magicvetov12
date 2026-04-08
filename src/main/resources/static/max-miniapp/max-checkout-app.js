@@ -29,7 +29,7 @@ function trackVKEcommerce(goal, data) {
             console.log('📊 VK E-commerce tracking:', goal, data);
             _tmr.push({
                 type: "reachGoal",
-                id: "3695469",
+                id: "3756511",
                 goal: goal,
                 value: data.value || undefined,
                 params: data.params || {}
