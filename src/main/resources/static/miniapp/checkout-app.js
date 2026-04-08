@@ -349,10 +349,9 @@ class PizzaNatCheckoutApp {
 
         // Если ничего не сработало, пробуем MAX Contact авторизацию
         console.log('🔧 Both auth methods failed, trying MAX Contact auth...');
-        try {
-            // Проверяем, есть ли MAX ID в WebApp
-            const maxUserId = this.tg?.initDataUnsafe?.user?.id;
-            if (maxUserId) {
+        const maxUserId = this.tg?.initDataUnsafe?.user?.id;
+        if (maxUserId) {
+            try {
                 console.log('📱 Found MAX user ID in WebApp:', maxUserId);
                 const response = await this.api.authenticateByMaxContact(
                     maxUserId,
@@ -373,7 +372,6 @@ class PizzaNatCheckoutApp {
                 }
             } catch (error) {
                 console.error('❌ MAX Contact authentication failed:', error);
-                // Если MAX Contact тоже не сработал, показываем поле для ручного ввода
                 this.showManualPhoneInput();
             }
         } else {
