@@ -81,6 +81,7 @@ public class ProductMapper {
                 .weight(entity.getWeight())
                 .isAvailable(entity.isAvailable())
                 .isSpecialOffer(entity.isSpecialOffer())
+                .isPreorder(entity.isPreorder())
                 .discountPercent(entity.getDiscountPercent())
                 .build();
     }

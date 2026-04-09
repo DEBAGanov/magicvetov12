@@ -24,5 +24,6 @@ public class ProductDTO {
     private Integer weight;
     private boolean isAvailable;
     private boolean isSpecialOffer;
+    private boolean isPreorder;
     private Integer discountPercent;
 }

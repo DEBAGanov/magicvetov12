@@ -43,6 +43,8 @@ public class Product {
 
     private boolean isSpecialOffer;
 
+    private boolean isPreorder;
+
     private Integer discountPercent;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

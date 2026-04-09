@@ -151,6 +151,7 @@ public class AdminProductService {
                 .weight(product.getWeight())
                 .isAvailable(product.isAvailable())
                 .isSpecialOffer(product.isSpecialOffer())
+                .isPreorder(product.isPreorder())
                 .discountPercent(product.getDiscountPercent())
                 .build();
     }
