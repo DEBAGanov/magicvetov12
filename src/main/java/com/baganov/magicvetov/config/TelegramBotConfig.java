@@ -50,39 +50,43 @@ public class TelegramBotConfig {
 
     @PostConstruct
     public void registerBots() {
-        try {
-            // Проверяем, включены ли Telegram боты вообще
-            if (!isTelegramEnabled()) {
-                log.info("🚫 Telegram боты отключены в конфигурации");
-                return;
+        // Запускаем регистрацию ботов в отдельном потоке, чтобы не блокировать запуск приложения
+        Thread.ofVirtual().name("telegram-bot-init").start(() -> {
+            try {
+                // Небольшая задержка чтобы все бины успели инициализироваться
+                Thread.sleep(3000);
+
+                if (!isTelegramEnabled()) {
+                    log.info("🚫 Telegram боты отключены в конфигурации");
+                    return;
+                }
+
+                TelegramBotsApi botsApi = telegramBotsApi();
+
+                // Регистрируем основной бот если включен и доступен
+                if (isMainBotEnabled() && pizzaNatTelegramBot != null) {
+                    botsApi.registerBot(pizzaNatTelegramBot);
+                    log.info("✅ Основной Telegram бот успешно зарегистрирован: @{}",
+                            pizzaNatTelegramBot.getBotUsername());
+                } else {
+                    log.info("🚫 Основной Telegram бот отключен в настройках (TELEGRAM_BOT_ENABLED=false)");
+                }
+
+                // Регистрируем админский бот если включен и доступен
+                if (isAdminBotEnabled() && pizzaNatAdminBot != null) {
+                    botsApi.registerBot(pizzaNatAdminBot);
+                    log.info("✅ Админский Telegram бот успешно зарегистрирован: @{}",
+                            pizzaNatAdminBot.getBotUsername());
+                } else {
+                    log.info("🚫 Админский Telegram бот отключен в настройках (TELEGRAM_ADMIN_BOT_ENABLED=false)");
+                }
+
+            } catch (TelegramApiException e) {
+                log.error("❌ Ошибка при регистрации Telegram ботов: {}", e.getMessage());
+            } catch (Exception e) {
+                log.warn("⚠️ Telegram боты недоступны: {}", e.getMessage());
             }
-
-            TelegramBotsApi botsApi = telegramBotsApi();
-
-            // Регистрируем основной бот если включен и доступен
-            if (isMainBotEnabled() && pizzaNatTelegramBot != null) {
-                botsApi.registerBot(pizzaNatTelegramBot);
-                log.info("✅ Основной Telegram бот успешно зарегистрирован: @{}",
-                        pizzaNatTelegramBot.getBotUsername());
-            } else {
-                log.info("🚫 Основной Telegram бот отключен в настройках (TELEGRAM_BOT_ENABLED=false)");
-            }
-
-            // Регистрируем админский бот если включен и доступен
-            if (isAdminBotEnabled() && pizzaNatAdminBot != null) {
-                botsApi.registerBot(pizzaNatAdminBot);
-                log.info("✅ Админский Telegram бот успешно зарегистрирован: @{}",
-                        pizzaNatAdminBot.getBotUsername());
-            } else {
-                log.info("🚫 Админский Telegram бот отключен в настройках (TELEGRAM_ADMIN_BOT_ENABLED=false)");
-            }
-
-        } catch (TelegramApiException e) {
-            log.error("❌ Ошибка при регистрации Telegram ботов: {}", e.getMessage(), e);
-            throw new RuntimeException("Не удалось зарегистрировать Telegram ботов", e);
-        } catch (Exception e) {
-            log.warn("⚠️ Telegram боты недоступны: {}", e.getMessage());
-        }
+        });
     }
 
     /**
