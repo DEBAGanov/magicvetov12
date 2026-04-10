@@ -131,6 +131,13 @@
     transform: scale(0.95);
 }
 
+.preorder-button {
+    background: #e90e0e !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
+    font-size: 12px;
+}
+
 .quantity-controls {
     display: none;
     align-items: center;

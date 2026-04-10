@@ -354,8 +354,8 @@ class PizzaNatMenuApp {
                     <div class="menu-item-title">${product.name}</div>
                     <div class="menu-item-price">₽${product.price}</div>
                     <div class="menu-item-actions">
-                        ${quantity === 0 ? 
-                            `<button class="add-button" data-product-id="${product.id}">добавить</button>` :
+                        ${quantity === 0 ?
+                            `<button class="add-button ${product.isPreorder ? 'preorder-button' : ''}" data-product-id="${product.id}">${product.isPreorder ? 'под заказ' : 'добавить'}</button>` :
                             `<div class="quantity-controls active">
                                 <button class="quantity-btn minus" data-product-id="${product.id}">−</button>
                                 <button class="quantity-btn plus" data-product-id="${product.id}">+</button>
@@ -922,6 +922,12 @@ class PizzaNatMenuApp {
             img.alt = product.name;
             title.textContent = product.name;
             price.textContent = `₽${product.price}`;
+
+            // Обновляем текст кнопки в карточке
+            const addBtn = document.getElementById('image-viewer-add-btn');
+            if (addBtn) {
+                addBtn.textContent = product.isPreorder ? 'Под заказ' : 'Добавить в корзину';
+            }
 
             // Создаём индикаторы
             this.updateSliderIndicators();
