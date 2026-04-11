@@ -1,8 +1,8 @@
 /* Checkout Page Styles */
 
 .checkout-page {
-    background: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+    background: var(--tg-theme-bg-color, #f8f8f8);
+    color: var(--tg-theme-text-color, #222222);
 }
 
 /* Header */
@@ -19,13 +19,13 @@
 .header-title {
     font-size: 18px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--tg-theme-text-color, #222222);
 }
 
 /* Main Content */
 .main-content {
     padding: 16px;
-    padding-bottom: 100px; /* Space for submit button */
+    padding-bottom: 100px;
 }
 
 /* Sections */
@@ -33,10 +33,11 @@
 .delivery-section,
 .payment-section,
 .user-info-section {
-    background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+    background: var(--tg-theme-secondary-bg-color, #ffffff);
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .order-summary h2,
@@ -45,7 +46,7 @@
 .user-info-section h3 {
     font-size: 18px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--tg-theme-text-color, #222222);
     margin: 0 0 12px 0;
 }
 
@@ -58,7 +59,7 @@
     display: flex;
     align-items: center;
     padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .order-item:last-child {
@@ -66,11 +67,11 @@
 }
 
 .order-item-image {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
     object-fit: cover;
-    margin-right: 8px;
+    margin-right: 12px;
 }
 
 .order-item-info {
@@ -80,22 +81,22 @@
 .order-item-title {
     font-size: 14px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
 }
 
 .order-item-details {
     font-size: 12px;
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--tg-theme-hint-color, #888888);
 }
 
 .order-item-price {
     font-size: 14px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
 }
 
 .order-total {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
     padding-top: 12px;
     display: flex;
     flex-direction: column;
@@ -106,20 +107,21 @@
     display: flex;
     justify-content: space-between;
     font-size: 14px;
+    color: var(--tg-theme-text-color, #222222);
 }
 
 .delivery-cost {
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--tg-theme-hint-color, #888888);
 }
 
 .total-amount {
     font-size: 16px;
     font-weight: 700;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
     display: flex;
     justify-content: space-between;
     padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* Option Cards */
@@ -131,8 +133,8 @@
 }
 
 .option-card {
-    background: var(--tg-theme-bg-color, #1e1e1e);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: var(--tg-theme-bg-color, #f0f0f0);
+    border: 2px solid rgba(0, 0, 0, 0.06);
     border-radius: 12px;
     padding: 16px;
     cursor: pointer;
@@ -142,7 +144,7 @@
 
 .option-card:has(input:checked) {
     border-color: var(--tg-theme-button-color, #007aff);
-    background: rgba(0, 122, 255, 0.1);
+    background: rgba(0, 122, 255, 0.08);
 }
 
 .option-card input[type="radio"] {
@@ -158,48 +160,38 @@
 .option-title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
     margin-bottom: 4px;
 }
 
 .option-subtitle {
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--tg-theme-hint-color, #888888);
 }
 
-/* СБП логотип в опциях оплаты (PNG via /miniapp/) */
+/* СБП логотип */
 .option-title img[src*="sbp-logo"] {
     display: block;
     height: 40px;
     width: auto;
     max-width: 120px;
     margin: 0 auto;
-    filter: brightness(1.1);
-    transition: all 0.2s ease;
     object-fit: contain;
-    /* Дополнительные настройки для PNG */
     image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
     backface-visibility: hidden;
 }
 
-/* Альтернативный селектор для СБП логотипа (PNG) */
 .option-title img[alt*="СБП"] {
     display: block;
     height: 40px;
     width: auto;
     max-width: 120px;
     margin: 0 auto;
-    filter: brightness(1.1);
-    transition: all 0.2s ease;
     object-fit: contain;
-    /* Дополнительные настройки для PNG */
     image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
     backface-visibility: hidden;
 }
 
-/* Центрирование для option-title с изображением */
 .option-title:has(img) {
     display: flex;
     justify-content: center;
@@ -207,10 +199,8 @@
     margin-bottom: 8px;
 }
 
-/* Hover эффект для логотипа СБП (miniapp path) */
 .option-card:hover .option-title img[src*="sbp-logo"] {
     transform: scale(1.05);
-    filter: brightness(1.2);
 }
 
 .option-price {
@@ -238,7 +228,7 @@
 .address-section h4 {
     font-size: 16px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
     margin: 0 0 12px 0;
 }
 
@@ -248,12 +238,12 @@
 
 .address-input {
     width: 100%;
-    background: var(--tg-theme-bg-color, #1e1e1e);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--tg-theme-bg-color, #f0f0f0);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
     padding: 12px;
     font-size: 16px;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
     box-sizing: border-box;
 }
 
@@ -263,7 +253,7 @@
 }
 
 .address-input::placeholder {
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--tg-theme-hint-color, #aaaaaa);
 }
 
 .address-suggestions {
@@ -271,9 +261,9 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--tg-theme-secondary-bg-color, #2c2c2c);
+    background: var(--tg-theme-secondary-bg-color, #ffffff);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 100;
     max-height: 200px;
     overflow-y: auto;
@@ -282,13 +272,14 @@
 
 .address-suggestion {
     padding: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     cursor: pointer;
     transition: background 0.2s;
+    color: var(--tg-theme-text-color, #222222);
 }
 
 .address-suggestion:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .address-suggestion:last-child {
@@ -300,7 +291,7 @@
 }
 
 .address-note small {
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--tg-theme-hint-color, #888888);
     font-size: 12px;
 }
 
@@ -314,12 +305,12 @@
 .contact-input,
 .comment-textarea {
     width: 100%;
-    background: var(--tg-theme-bg-color, #1e1e1e);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--tg-theme-bg-color, #f0f0f0);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
     padding: 12px;
     font-size: 16px;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
     box-sizing: border-box;
 }
 
@@ -331,7 +322,7 @@
 
 .contact-input::placeholder,
 .comment-textarea::placeholder {
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--tg-theme-hint-color, #aaaaaa);
 }
 
 .comment-textarea {
@@ -346,15 +337,15 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--tg-theme-bg-color, #1e1e1e);
+    background: var(--tg-theme-bg-color, #f8f8f8);
     padding: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
     z-index: 1000;
 }
 
 .submit-button {
     width: 100%;
-    background: var(--tg-theme-button-color, #007aff);
+    background: var(--tg-theme-button-color, #21A038);
     color: var(--tg-theme-button-text-color, #ffffff);
     border: none;
     border-radius: 12px;
@@ -391,19 +382,19 @@
     .main-content {
         padding: 12px;
     }
-    
+
     .option-card {
         padding: 12px;
     }
-    
+
     .option-title {
         font-size: 14px;
     }
-    
+
     .option-subtitle {
         font-size: 12px;
     }
-    
+
     .option-price {
         font-size: 14px;
     }
@@ -411,7 +402,7 @@
 
 /* User Info Section */
 .user-info-display {
-    background: var(--tg-theme-bg-color, #1e1e1e);
+    background: var(--tg-theme-bg-color, #f0f0f0);
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 12px;
@@ -420,95 +411,28 @@
 .user-name {
     font-size: 16px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #ffffff);
+    color: var(--tg-theme-text-color, #222222);
     margin-bottom: 4px;
 }
 
 .user-phone {
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #999999);
+    color: var(--tg-theme-hint-color, #888888);
 }
 
 .comment-section {
     margin-top: 12px;
 }
 
-.comment-textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 12px;
-    border: 1px solid var(--tg-theme-hint-color, #444444);
-    border-radius: 8px;
-    background: var(--tg-theme-bg-color, #1e1e1e);
-    color: var(--tg-theme-text-color, #ffffff);
-    font-size: 14px;
-    font-family: inherit;
-    resize: vertical;
-    box-sizing: border-box;
-}
-
-.comment-textarea::placeholder {
-    color: var(--tg-theme-hint-color, #999999);
-}
-
-.comment-textarea:focus {
-    outline: none;
-    border-color: var(--tg-theme-button-color, #007aff);
-}
-
-/* Address suggestions positioning */
-.address-suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--tg-theme-secondary-bg-color, #2c2c2c);
-    border: 1px solid var(--tg-theme-hint-color, #444444);
-    border-radius: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.address-suggestions.keyboard-visible {
-    position: fixed;
-    bottom: 220px; /* Поднимаем над клавиатурой */
-    left: 16px;
-    right: 16px;
-    top: auto;
-}
-
-.address-suggestion-item {
-    padding: 12px;
-    border-bottom: 1px solid var(--tg-theme-hint-color, #444444);
-    cursor: pointer;
-    color: var(--tg-theme-text-color, #ffffff);
-    transition: background-color 0.2s;
-}
-
-.address-suggestion-item:hover {
-    background: var(--tg-theme-bg-color, #1e1e1e);
-}
-
-.address-suggestion-item:last-child {
-    border-bottom: none;
-}
-
-.address-input-container {
-    position: relative;
-}
-
 /* Keyboard handling */
 body.keyboard-visible .address-section {
-    margin-bottom: 250px; /* Дополнительное пространство */
+    margin-bottom: 250px;
 }
 
 body.keyboard-visible .main-content {
-    padding-bottom: 300px; /* Увеличиваем отступ снизу */
+    padding-bottom: 300px;
 }
 
-/* Auto-scroll to input when focused */
 .address-input:focus {
     scroll-margin-top: 100px;
 }
