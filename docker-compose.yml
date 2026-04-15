@@ -200,7 +200,7 @@ services:
       MAX_BOT_ADMIN-ENABLED: ${MAX_BOT_ADMIN_ENABLED:-true}
 
       # CORS настройки для поддержки фронтенда
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://magicvetov12.ru,https://www.magicvetov12.ru/*,https://api.magicvetov.ru/*,https://api.magiacvetov12.ru,http://localhost:5173,http://localhost:3000,http://localhost:8080,https://api.dimbopizza.ru,https://dimbopizza.ru,https://dimbopizza.ru/*,https://t.me/DIMBOpizzaBot/*,https://web.telegram.org/k/#@DIMBOpizzaBot,https://max.ru,https://m.max.ru,https://web.max.ru,https://app.max.ru}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://magiacvetov12.ru,https://www.magiacvetov12.ru,https://magicvetov12.ru,https://www.magicvetov12.ru,https://api.magicvetov.ru,https://api.magiacvetov12.ru,http://localhost:5173,http://localhost:3000,http://localhost:8080,https://api.dimbopizza.ru,https://dimbopizza.ru,https://t.me,https://web.telegram.org,https://max.ru,https://m.max.ru,https://web.max.ru,https://app.max.ru}
       CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS:-GET,POST,PUT,DELETE,OPTIONS,PATCH}
       CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS:-Authorization,Content-Type,X-Requested-With,Accept,Origin,X-Auth-Token,Cache-Control,X-Client-Type,X-Client-Version,X-Session-Id}
       CORS_EXPOSED_HEADERS: ${CORS_EXPOSED_HEADERS:-Authorization,Content-Type,X-Total-Count,X-Pagination-Page,X-Pagination-Size}
