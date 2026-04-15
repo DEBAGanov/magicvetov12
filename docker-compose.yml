@@ -8,7 +8,6 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: magicvetov-nginx
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -23,7 +22,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.optimized
-    container_name: magicvetov
     restart: unless-stopped
 
     # Health check
@@ -236,7 +234,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: magicvetov-frontend
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ""
