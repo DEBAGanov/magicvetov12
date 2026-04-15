@@ -61,7 +61,12 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
           <button
             onClick={async (e) => {
               e.preventDefault();
-              await addItem(product.id);
+              try {
+                await addItem(product.id);
+              } catch (err) {
+                alert("Ошибка при добавлении в корзину");
+                console.error("Add to cart error:", err);
+              }
             }}
             className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors shrink-0"
             title="В корзину"

@@ -104,7 +104,15 @@ export default function ProductPage() {
 
           <div className="flex flex-wrap gap-3 mb-6">
             <button
-              onClick={() => addItem(product.id)}
+              onClick={async () => {
+                try {
+                  await addItem(product.id);
+                  alert("Добавлено в корзину!");
+                } catch (err) {
+                  alert("Ошибка при добавлении в корзину");
+                  console.error("Add to cart error:", err);
+                }
+              }}
               className="px-6 py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600 transition-colors flex items-center gap-2"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>

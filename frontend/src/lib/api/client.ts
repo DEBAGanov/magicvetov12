@@ -22,7 +22,8 @@ function getSessionId(): string {
   const match = document.cookie.match(/CART_SESSION_ID=([^;]+)/);
   if (match) return match[1];
   const id = "mc_" + crypto.randomUUID();
-  document.cookie = `CART_SESSION_ID=${id}; max-age=${30 * 24 * 3600}; path=/; samesite=lax`;
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `CART_SESSION_ID=${id}; max-age=${30 * 24 * 3600}; path=/; SameSite=Lax${secure}`;
   return id;
 }
 
