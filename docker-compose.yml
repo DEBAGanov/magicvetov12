@@ -1,7 +1,24 @@
 version: "3.8"
 
-# Production версия для Timeweb Cloud с заполненными боевыми данными
+# Production версия для Timeweb Cloud
+# Порядок сервисов важен: первый сервис (nginx) получает проксирование домена
 services:
+  # Nginx — маршрутизация между frontend и backend (ПЕРВЫЙ — получает домен)
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: magicvetov-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    networks:
+      - magicvetov-network
+    depends_on:
+      - app
+      - frontend
+
+  # Spring Boot Backend
   app:
     build:
       context: .
@@ -172,24 +189,16 @@ services:
       TELEGRAM_ADMIN_BOT_TIMEOUT_SECONDS: 30
 
       # MAX Bot API настройки (мессенджер MAX - российский аналог Telegram)
-      # Документация: https://dev.max.ru/docs/webapps/introduction
       MAX_BOT_ENABLED: ${MAX_BOT_ENABLED:-true}
-      # Пользовательский бот: https://max.ru/id121602873440_bot
       MAX_BOT_USER-BOT-TOKEN: ${MAX_BOT_USER_BOT_TOKEN:-f9LHodD0cOLzJ0LMIMFeCLazQLKZPMVqsS2viXz8LkkHF6BsPRUUeqznyh7Kpfoe8ymLg--NbExQVjcVNLV_}
       MAX_BOT_USER-BOT-USERNAME: ${MAX_BOT_USER_BOT_USERNAME:-id121602873440_bot}
-      # Административный бот: https://max.ru/id121602873440_1_bot
       MAX_BOT_ADMIN-BOT-TOKEN: ${MAX_BOT_ADMIN_BOT_TOKEN:-f9LHodD0cOIqPfI8nfMknYxstgytGgaMkDrqN07JjsIizv8YDHthh3Srtvg299WfN-uBuokKMwN_bYaNfntH}
       MAX_BOT_ADMIN-BOT-USERNAME: ${MAX_BOT_ADMIN_BOT_USERNAME:-id121602873440_1_bot}
-      # Настройки API
       MAX_BOT_API-URL: ${MAX_BOT_API_URL:-https://platform-api.max.ru}
-      # Chat ID для административных уведомлений
       MAX_BOT_ADMIN-CHAT-ID: ${MAX_BOT_ADMIN_CHAT_ID:-230947976}
-      # Webhook URL для Admin Bot - MAX API будет отправлять события на этот URL
       MAX_BOT_ADMIN-WEBHOOK-URL: ${MAX_BOT_ADMIN_WEBHOOK_URL:-https://api.magiacvetov12.ru/max-admin/}
-      # Таймауты и повторные попытки
       MAX_BOT_TIMEOUT: ${MAX_BOT_TIMEOUT:-30000}
       MAX_BOT_MAX-RETRIES: ${MAX_BOT_MAX_RETRIES:-3}
-      # Включить административные уведомления
       MAX_BOT_ADMIN-ENABLED: ${MAX_BOT_ADMIN_ENABLED:-true}
 
       # CORS настройки для поддержки фронтенда
@@ -210,8 +219,8 @@ services:
       GOOGLE_SHEETS_CONNECT_TIMEOUT: ${GOOGLE_SHEETS_CONNECT_TIMEOUT:-10000}
       GOOGLE_SHEETS_READ_TIMEOUT: ${GOOGLE_SHEETS_READ_TIMEOUT:-30000}
       GOOGLE_SHEETS_MAX_RETRY_ATTEMPTS: ${GOOGLE_SHEETS_MAX_RETRY_ATTEMPTS:-3}
-      GOOGLE_SHEETS_RETRY_DELAY: ${GOOGLE_SHEETS_RETRY_DELAY:-1000}
-      
+      GOOGLE_SHEETS_RETRY_DELAY: ${GOOGLE_SHEETS_RETRY_DELAY:-1001}
+
       # Google Sheets S3 интеграция
       GOOGLE_SHEETS_DOWNLOAD_FROM_S3: ${GOOGLE_SHEETS_DOWNLOAD_FROM_S3:-true}
       GOOGLE_SHEETS_S3_CREDENTIALS_KEY: ${GOOGLE_SHEETS_S3_CREDENTIALS_KEY:-config/google-credentials.json}
@@ -221,10 +230,6 @@ services:
 
     networks:
       - magicvetov-network
-
-    #volumes:
-      # Google Sheets credentials (только если файл существует)
-      #- ${GOOGLE_CREDENTIALS_FILE_PATH:-./config/google-credentials.json}:/app/config/google-credentials.json:ro
 
   # Next.js Frontend
   frontend:
@@ -242,22 +247,6 @@ services:
     networks:
       - magicvetov-network
 
-  # Nginx — маршрутизация между frontend и backend
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: magicvetov-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    networks:
-      - magicvetov-network
-    depends_on:
-      - app
-      - frontend
-
 networks:
   magicvetov-network:
     driver: bridge
-
