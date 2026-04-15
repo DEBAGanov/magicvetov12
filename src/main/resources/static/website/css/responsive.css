@@ -1,0 +1,43 @@
+/* ============================================
+ * MagicCvetov — Responsive overrides
+ * ============================================ */
+
+/* Планшет */
+@media (max-width: 1024px) {
+  .grid--4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Мобильный */
+@media (max-width: 768px) {
+  .grid--3,
+  .grid--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero {
+    padding: var(--space-3xl) 0;
+  }
+
+  .section {
+    padding: var(--space-3xl) 0;
+  }
+}
+
+/* Маленький мобильный */
+@media (max-width: 480px) {
+  .grid--2,
+  .grid--3,
+  .grid--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero__actions {
+    flex-direction: column;
+  }
+
+  .hero__actions .btn {
+    width: 100%;
+  }
+}
