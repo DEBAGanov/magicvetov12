@@ -216,8 +216,8 @@ services:
       GOOGLE_SHEETS_DOWNLOAD_FROM_S3: ${GOOGLE_SHEETS_DOWNLOAD_FROM_S3:-true}
       GOOGLE_SHEETS_S3_CREDENTIALS_KEY: ${GOOGLE_SHEETS_S3_CREDENTIALS_KEY:-config/google-credentials.json}
 
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
 
     networks:
       - magicvetov-network
@@ -241,9 +241,21 @@ services:
       - "3000"
     networks:
       - magicvetov-network
+
+  # Nginx — маршрутизация между frontend и backend
+  nginx:
+    image: nginx:alpine
+    container_name: magicvetov-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - magicvetov-network
     depends_on:
-      app:
-        condition: service_healthy
+      - app
+      - frontend
 
 networks:
   magicvetov-network:
