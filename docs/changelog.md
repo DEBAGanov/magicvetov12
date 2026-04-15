@@ -1,5 +1,22 @@
 # MagicCvetov - Журнал изменений
 
+## [2026-04-15] - Переход на Next.js 15 фронтенд
+
+### Добавлено
+- Next.js 15 проект в `frontend/` с TypeScript, Tailwind CSS 4, App Router
+- Dockerfile для standalone Docker build (Node.js 22 Alpine)
+- Конфигурация Tailwind с розовой темой (#ea47bf, как на FlowLove)
+- next.config.ts с image remote patterns для Timeweb S3
+- Root layout с Mulish шрифтом (Cyrillic + Latin), SEO metadata
+
+### Изменено
+- `docker-compose.yml` — добавлен сервис `frontend` + сеть `magicvetov-network`
+- `nginx/nginx.conf` — маршрутизация: `/api/` → Spring Boot, `/*` → Next.js
+- `docs/Diary.md` — запись о начале работ
+
+### Удалено
+- Старый статический сайт `src/main/resources/static/website/` (заменён на Next.js)
+
 ## [2025-09-17-UPD] - 🔧 ОБНОВЛЕНИЕ VK ПИКСЕЛЯ: Переименование события
 
 ### Изменено

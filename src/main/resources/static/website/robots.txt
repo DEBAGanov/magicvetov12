@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /website/cart.html
-Disallow: /website/checkout.html
-
-Sitemap: https://magiacvetov12.ru/website/sitemap.xml

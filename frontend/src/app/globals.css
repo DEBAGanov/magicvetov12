@@ -1,0 +1,43 @@
+/**
+ * @file: globals.css
+ * @description: Global styles with Tailwind CSS and custom theme variables
+ * @dependencies: tailwindcss
+ * @created: 2026-04-15
+ */
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #fdf2f8;
+  --color-primary-100: #fce7f3;
+  --color-primary-200: #fbcfe8;
+  --color-primary-300: #f9a8d4;
+  --color-primary-400: #f472b6;
+  --color-primary-500: #ea47bf;
+  --color-primary-600: #db2777;
+  --color-primary-700: #be185d;
+  --color-primary-800: #9d174d;
+  --color-primary-900: #831843;
+
+  --color-secondary-500: #2DAF53;
+  --color-secondary-600: #22943F;
+
+  --color-accent-500: #ffae00;
+
+  --font-sans: "Mulish", sans-serif;
+
+  --container-max: 1280px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide scrollbar for horizontal carousels */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

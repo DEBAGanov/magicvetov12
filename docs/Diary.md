@@ -1,5 +1,26 @@
 # MagicCvetov - Дневник наблюдений
 
+## 2026-04-15 - Переход на Next.js 15 для сайта magiacvetov12.ru
+
+### Наблюдения
+- Статический HTML/CSS/JS сайт (website/) ограничен: нет SSR, нет типизации API, нет нормального state-менеджмента
+- FlowLove (volzhsk.flowlove.ru) — хороший эталон: розовая тема #ea47bf, Mulish шрифт, фиксированная нижняя навигация, карусели товаров
+- Бэкенд полностью готов: все REST API endpoints работают, корзина поддерживает анонимных пользователей через X-Session-Id
+- CORS уже разрешает localhost:3000 — Next.js dev сервер будет работать из коробки
+- Продуктовые изображения хранятся в Timeweb S3 (s3.twcstorage.ru)
+
+### Решения
+- Выбран Next.js 15 с App Router: SSR для SEO, React компоненты для интерактивности
+- Tailwind CSS 4 для стилизации (вместо кастомного CSS)
+- Zustand для state-менеджмента (корзина, авторизация)
+- Standalone Docker build для минимального размера образа
+- Nginx маршрутизирует /api/ → Spring Boot, / → Next.js
+- Удалён старый статический сайт (src/main/resources/static/website/)
+
+### Проблемы
+- Необходимо убедиться что npm install работает в Docker build (Alpine Linux совместимость)
+- Нужно настроить images.remotePatterns для s3.twcstorage.ru в next.config.ts
+
 ## 2026-03-28 - MAX User Bot - полноценный функционал как в Telegram
 
 ### Наблюдения

@@ -218,8 +218,34 @@ services:
 
     ports:
       - "8080:8080"
-    
+
+    networks:
+      - magicvetov-network
+
     #volumes:
       # Google Sheets credentials (только если файл существует)
       #- ${GOOGLE_CREDENTIALS_FILE_PATH:-./config/google-credentials.json}:/app/config/google-credentials.json:ro
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: magicvetov-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ""
+      INTERNAL_API_URL: "http://app:8080"
+      NEXT_PUBLIC_SITE_URL: "https://magiacvetov12.ru"
+    expose:
+      - "3000"
+    networks:
+      - magicvetov-network
+    depends_on:
+      app:
+        condition: service_healthy
+
+networks:
+  magicvetov-network:
+    driver: bridge
 
