@@ -117,6 +117,16 @@ export interface PaymentUrlResponse {
   confirmationUrl?: string;
 }
 
+export interface OrderPage {
+  content: OrderDTO[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
 // Auth
 export interface AuthResponse {
   token: string;

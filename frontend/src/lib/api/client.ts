@@ -122,7 +122,7 @@ export const ordersApi = {
   getPaymentUrl: (id: number) =>
     apiRequest<import("@/lib/types").PaymentUrlResponse>(`/orders/${id}/payment-url`, { auth: true }),
   getUserOrders: (page = 0, size = 10) =>
-    apiRequest<import("@/lib/types").ProductPage>(`/orders?page=${page}&size=${size}`, { auth: true }),
+    apiRequest<import("@/lib/types").OrderPage>(`/orders?page=${page}&size=${size}`, { auth: true }),
 };
 
 // Auth

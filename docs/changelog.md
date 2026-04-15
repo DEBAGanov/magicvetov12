@@ -8,6 +8,12 @@
 - Конфигурация Tailwind с розовой темой (#ea47bf, как на FlowLove)
 - next.config.ts с image remote patterns для Timeweb S3
 - Root layout с Mulish шрифтом (Cyrillic + Latin), SEO metadata
+- Все страницы: главная, каталог, карточка товара, корзина, оформление заказа, личный кабинет, авторизация, история заказов, детали заказа, поиск
+- Компоненты: Header (sticky), Footer, MobileNav (fixed bottom), HeroBanner, CategoryGrid, ProductSection, ProductCard, ReviewsSection, FAQSection, DeliveryInfo
+- API клиент для всех бэкенд endpoints (products, categories, cart, orders, auth, delivery)
+- Zustand stores для корзины и авторизации
+- SEO: sitemap.xml, robots.txt, metadata на всех страницах, JSON-LD
+- Служебные страницы: loading.tsx (skeleton), not-found.tsx (404), error.tsx (error boundary)
 
 ### Изменено
 - `docker-compose.yml` — добавлен сервис `frontend` + сеть `magicvetov-network`
