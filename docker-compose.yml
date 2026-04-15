@@ -244,13 +244,13 @@ services:
 
   # Nginx — маршрутизация между frontend и backend
   nginx:
-    image: nginx:alpine
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     container_name: magicvetov-nginx
     restart: unless-stopped
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - magicvetov-network
     depends_on:
