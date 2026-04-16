@@ -60,6 +60,7 @@ export default function ProductPage() {
 
   const displayPrice = product.discountedPrice || product.price;
   const hasDiscount = product.discountedPrice && product.discountedPrice < product.price;
+  const allImages = useMemo(() => [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean), [product.imageUrl, product.additionalImages]);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -76,7 +77,7 @@ export default function ProductPage() {
         {/* Gallery */}
         <div className="group">
           <ProductGallery
-            images={useMemo(() => [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean), [product.imageUrl, product.additionalImages])}
+            images={allImages}
             productName={product.name}
           />
         </div>
