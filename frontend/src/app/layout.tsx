@@ -10,6 +10,7 @@ import { Mulish } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MobileNav from "@/components/layout/MobileNav";
+import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
 const mulish = Mulish({
@@ -45,10 +46,12 @@ export default function RootLayout({
   return (
     <html lang="ru" className={mulish.variable}>
       <body className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1">{children}</div>
-        <Footer />
-        <MobileNav />
+        <ToastProvider>
+          <Header />
+          <div className="flex-1">{children}</div>
+          <Footer />
+          <MobileNav />
+        </ToastProvider>
       </body>
     </html>
   );

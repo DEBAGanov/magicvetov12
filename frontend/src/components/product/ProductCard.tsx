@@ -10,10 +10,12 @@ import { useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/lib/store/cart-store";
+import { useToast } from "@/components/ui/Toast";
 import type { ProductDTO } from "@/lib/types";
 
 export default function ProductCard({ product }: { product: ProductDTO }) {
   const addItem = useCartStore((s) => s.addItem);
+  const toast = useToast();
 
   const allImages = useMemo(
     () => [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean),
@@ -115,9 +117,9 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
               e.preventDefault();
               try {
                 await addItem(product.id);
-              } catch (err) {
-                alert("Ошибка при добавлении в корзину");
-                console.error("Add to cart error:", err);
+                toast.show("Добавлено в корзину!");
+              } catch {
+                toast.show("Ошибка при добавлении", "error");
               }
             }}
             className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors shrink-0"

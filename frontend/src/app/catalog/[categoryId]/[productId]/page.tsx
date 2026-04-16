@@ -13,6 +13,7 @@ import { productsApi } from "@/lib/api/client";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatPrice } from "@/lib/utils";
 import ProductGallery from "@/components/product/ProductGallery";
+import { useToast } from "@/components/ui/Toast";
 import type { ProductDTO } from "@/lib/types";
 
 export default function ProductPage() {
@@ -20,6 +21,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<ProductDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((s) => s.addItem);
+  const toast = useToast();
 
   useEffect(() => {
     if (!productId) return;
@@ -109,10 +111,9 @@ export default function ProductPage() {
               onClick={async () => {
                 try {
                   await addItem(product.id);
-                  alert("Добавлено в корзину!");
-                } catch (err) {
-                  alert("Ошибка при добавлении в корзину");
-                  console.error("Add to cart error:", err);
+                  toast.show("Добавлено в корзину!");
+                } catch {
+                  toast.show("Ошибка при добавлении", "error");
                 }
               }}
               className="px-6 py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600 transition-colors flex items-center gap-2"

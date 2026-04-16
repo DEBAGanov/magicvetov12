@@ -11,10 +11,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cartApi, ordersApi, deliveryApi } from "@/lib/api/client";
 import { formatPrice } from "@/lib/utils";
+import { useToast } from "@/components/ui/Toast";
 import type { CartDTO, AddressSuggestion, PaymentMethod } from "@/lib/types";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const toast = useToast();
   const [cart, setCart] = useState<CartDTO | null>(null);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -51,7 +53,8 @@ export default function CheckoutPage() {
     try {
       const order = await ordersApi.create({
         deliveryType: deliveryType === "COURIER" ? "Доставка курьером" : "Самовывоз",
-        deliveryAddress: deliveryType === "COURIER" ? address : undefined,
+        deliveryAddress: deliveryType === "COURIER" ? address : "Самовывоз",
+        deliveryLocationId: deliveryType === "PICKUP" ? 1 : undefined,
         contactName,
         contactPhone: contactPhone.replace(/\D/g, ""),
         paymentMethod,
@@ -68,7 +71,7 @@ export default function CheckoutPage() {
         } catch { /* continue to success screen */ }
       }
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "Ошибка при оформлении заказа");
+      toast.show(e instanceof Error ? e.message : "Ошибка при оформлении заказа", "error");
     } finally {
       setSubmitting(false);
     }
