@@ -6,13 +6,13 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { productsApi } from "@/lib/api/client";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatPrice } from "@/lib/utils";
+import ProductGallery from "@/components/product/ProductGallery";
 import type { ProductDTO } from "@/lib/types";
 
 export default function ProductPage() {
@@ -73,15 +73,12 @@ export default function ProductPage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Image */}
-        <div className="bg-gray-50 rounded-xl overflow-hidden">
-          {product.imageUrl ? (
-            <div className="relative aspect-square">
-              <Image src={product.imageUrl} alt={product.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
-            </div>
-          ) : (
-            <div className="aspect-square flex items-center justify-center text-8xl">🌸</div>
-          )}
+        {/* Gallery */}
+        <div className="group">
+          <ProductGallery
+            images={useMemo(() => [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean), [product.imageUrl, product.additionalImages])}
+            productName={product.name}
+          />
         </div>
 
         {/* Info */}

@@ -1,43 +1,95 @@
 /**
  * @file: components/product/ProductCard.tsx
- * @description: Product card with image, price, add-to-cart, buy-one-click
+ * @description: Product card with hover image slider, price, add-to-cart
  * @created: 2026-04-15
  */
 
 "use client";
 
-import Image from "next/image";
+import { useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { formatPrice, cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/lib/store/cart-store";
 import type { ProductDTO } from "@/lib/types";
 
 export default function ProductCard({ product }: { product: ProductDTO }) {
   const addItem = useCartStore((s) => s.addItem);
 
+  const allImages = useMemo(
+    () => [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean),
+    [product.imageUrl, product.additionalImages]
+  );
+  const hasMultiple = allImages.length > 1;
+
+  const [imgIndex, setImgIndex] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startSlider = useCallback(() => {
+    if (!hasMultiple) return;
+    timerRef.current = setInterval(() => {
+      setImgIndex((i) => (i + 1) % allImages.length);
+    }, 800);
+  }, [hasMultiple, allImages.length]);
+
+  const stopSlider = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setImgIndex(0);
+  }, []);
+
   const hasDiscount = product.discountedPrice && product.discountedPrice < product.price;
   const displayPrice = product.discountedPrice || product.price;
 
   return (
     <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1">
-      <Link href={`/catalog/${product.categoryId}/${product.id}`} className="block relative aspect-square bg-gray-50 overflow-hidden">
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 50vw, 25vw"
-          />
+      <Link
+        href={`/catalog/${product.categoryId}/${product.id}`}
+        className="block relative aspect-square bg-gray-50 overflow-hidden"
+        onMouseEnter={startSlider}
+        onMouseLeave={stopSlider}
+      >
+        {allImages.length > 0 ? (
+          <>
+            {/* Stacked images — only the active one is visible */}
+            {allImages.map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt={i === imgIndex ? product.name : ""}
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                style={{ opacity: i === imgIndex ? 1 : 0 }}
+                loading="lazy"
+              />
+            ))}
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">🌸</div>
         )}
+
         {/* Badges */}
         {product.isSpecialOffer && (
-          <span className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">Акция</span>
+          <span className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full z-10">Акция</span>
         )}
         {product.isPreorder && (
-          <span className="absolute top-2 left-2 px-2 py-0.5 bg-secondary-500 text-white text-xs font-bold rounded-full">Под заказ</span>
+          <span className="absolute top-2 left-2 px-2 py-0.5 bg-secondary-500 text-white text-xs font-bold rounded-full z-10">Под заказ</span>
+        )}
+
+        {/* Dots indicator — only when multiple images */}
+        {hasMultiple && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+            {allImages.map((_, i) => (
+              <span
+                key={i}
+                className="block w-1.5 h-1.5 rounded-full transition-colors duration-200"
+                style={{
+                  backgroundColor: i === imgIndex ? "white" : "rgba(255,255,255,0.5)",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                }}
+              />
+            ))}
+          </div>
         )}
       </Link>
 
