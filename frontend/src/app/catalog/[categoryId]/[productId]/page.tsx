@@ -30,6 +30,11 @@ export default function ProductPage() {
       .finally(() => setLoading(false));
   }, [productId]);
 
+  const allImages = useMemo(
+    () => (product ? [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean) : []),
+    [product]
+  );
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -60,7 +65,6 @@ export default function ProductPage() {
 
   const displayPrice = product.discountedPrice || product.price;
   const hasDiscount = product.discountedPrice && product.discountedPrice < product.price;
-  const allImages = useMemo(() => [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean), [product.imageUrl, product.additionalImages]);
 
   return (
     <div className="container mx-auto px-4 py-6">
