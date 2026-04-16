@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -282,6 +284,25 @@ public class MagicCvetovAdminBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             log.error("Ошибка отправки сообщения с кнопками в админский бот: chatId={}, error={}", chatId,
                     e.getMessage());
+        }
+    }
+
+    /**
+     * Отправка фото с подписью
+     */
+    public void sendPhoto(Long chatId, String photoUrl, String caption) {
+        try {
+            SendPhoto sendPhoto = new SendPhoto();
+            sendPhoto.setChatId(chatId.toString());
+            sendPhoto.setPhoto(new InputFile(photoUrl));
+            if (caption != null && !caption.isEmpty()) {
+                sendPhoto.setCaption(caption);
+                sendPhoto.setParseMode("Markdown");
+            }
+            execute(sendPhoto);
+            log.debug("Фото отправлено в админский бот: chatId={}", chatId);
+        } catch (TelegramApiException e) {
+            log.error("Ошибка отправки фото в админский бот: chatId={}, error={}", chatId, e.getMessage());
         }
     }
 

@@ -57,6 +57,17 @@ public class TelegramAdminNotificationServiceImpl implements TelegramAdminNotifi
     }
 
     @Override
+    public void sendPhoto(Long chatId, String photoUrl, String caption) {
+        try {
+            Object adminBot = applicationContext.getBean("pizzaNatAdminBot");
+            adminBot.getClass().getMethod("sendPhoto", Long.class, String.class, String.class)
+                    .invoke(adminBot, chatId, photoUrl, caption);
+        } catch (Exception e) {
+            log.error("Ошибка отправки фото: {}", e.getMessage(), e);
+        }
+    }
+
+    @Override
     public InlineKeyboardMarkup createOrderManagementKeyboard(Long orderId) {
         try {
             // Получаем бот из контекста Spring по имени класса

@@ -48,6 +48,7 @@ public class MaxAdminBotService {
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final StorageService storageService;
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
@@ -884,8 +885,13 @@ public class MaxAdminBotService {
                 itemsTotal = itemsTotal.add(itemTotal);
                 sb.append("• ").append(escapeMarkdown(item.getProduct().getName()))
                         .append(" x").append(item.getQuantity())
-                        .append(" = ").append(String.format("%.2f ₽", itemTotal))
-                        .append("\n");
+                        .append(" = ").append(String.format("%.2f ₽", itemTotal));
+                // Добавляем ссылку на фото товара
+                String imgUrl = resolveImageUrl(item.getProduct());
+                if (imgUrl != null) {
+                    sb.append(" [📸 Фото](").append(imgUrl).append(")");
+                }
+                sb.append("\n");
             }
         }
         sb.append("\n");
@@ -1173,6 +1179,24 @@ public class MaxAdminBotService {
                 .replace("}", "\\}")
                 .replace(".", "\\.")
                 .replace("!", "\\!");
+    }
+
+    /**
+     * Разрешает URL изображения товара в полный публичный URL
+     */
+    private String resolveImageUrl(com.baganov.magicvetov.entity.Product product) {
+        if (product == null || product.getImageUrl() == null || product.getImageUrl().isEmpty()) {
+            return null;
+        }
+        try {
+            if (product.getImageUrl().startsWith("products/") || product.getImageUrl().startsWith("categories/")) {
+                return storageService.getPublicUrl(product.getImageUrl());
+            }
+            return product.getImageUrl();
+        } catch (Exception e) {
+            log.error("MAX: Ошибка получения URL изображения товара #{}: {}", product.getId(), e.getMessage());
+            return null;
+        }
     }
 
     private String formatDateTime(LocalDateTime dateTime) {

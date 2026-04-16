@@ -21,6 +21,11 @@ public interface TelegramAdminNotificationService {
     void sendMessage(Long chatId, String message, boolean parseMarkdown);
 
     /**
+     * Отправка фото с подписью
+     */
+    void sendPhoto(Long chatId, String photoUrl, String caption);
+
+    /**
      * Создание клавиатуры для управления заказом
      */
     InlineKeyboardMarkup createOrderManagementKeyboard(Long orderId);

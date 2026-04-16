@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +51,7 @@ public class AdminBotService {
     private final PaymentRepository paymentRepository;
     private final UserService userService;
     private final TelegramRateLimitService rateLimitService;
+    private final StorageService storageService;
 
     /**
      * Регистрация администратора
@@ -101,12 +103,27 @@ public class AdminBotService {
                 return;
             }
 
+            // Собираем URL фото товаров
+            List<String> imageUrls = collectProductImageUrls(order);
+
             String orderMessage = formatNewOrderMessage(order);
             InlineKeyboardMarkup keyboard = telegramAdminNotificationService
                     .createOrderManagementKeyboard(order.getId().longValue());
 
             for (TelegramAdminUser admin : activeAdmins) {
                 try {
+                    // Сначала отправляем фото товаров
+                    for (int i = 0; i < imageUrls.size(); i++) {
+                        String imageUrl = imageUrls.get(i);
+                        String caption = null;
+                        // Для первого фото добавляем краткий заголовок
+                        if (i == 0) {
+                            caption = String.format("🟢 *НОВЫЙ ЗАКАЗ #%d*", order.getId());
+                        }
+                        telegramAdminNotificationService.sendPhoto(admin.getTelegramChatId(), imageUrl, caption);
+                    }
+
+                    // Затем отправляем текстовое сообщение с кнопками
                     telegramAdminNotificationService.sendMessageWithButtons(admin.getTelegramChatId(), orderMessage,
                             keyboard);
                     log.debug("Уведомление о заказе #{} отправлено администратору: {}", order.getId(),
@@ -1252,7 +1269,7 @@ public class AdminBotService {
     public void sendSuccessfulPaymentOrderNotification(Order order, String paymentLabel) {
         try {
             String message = formatNewOrderMessageWithPaymentLabel(order, paymentLabel);
-            
+
             List<TelegramAdminUser> activeAdmins = adminUserRepository.findByIsActiveTrue();
 
             if (activeAdmins.isEmpty()) {
@@ -1260,22 +1277,71 @@ public class AdminBotService {
                 return;
             }
 
+            // Собираем URL фото товаров
+            List<String> imageUrls = collectProductImageUrls(order);
+
             for (TelegramAdminUser admin : activeAdmins) {
                 try {
+                    // Сначала отправляем фото товаров
+                    for (int i = 0; i < imageUrls.size(); i++) {
+                        String imageUrl = imageUrls.get(i);
+                        String caption = null;
+                        if (i == 0) {
+                            caption = String.format("💰 *ЗАКАЗ ОПЛАЧЕН #%d* %s", order.getId(), paymentLabel);
+                        }
+                        telegramAdminNotificationService.sendPhoto(admin.getTelegramChatId(), imageUrl, caption);
+                    }
+
+                    // Затем текстовое сообщение
                     telegramAdminNotificationService.sendMessage(admin.getTelegramChatId(), message, true);
-                    log.debug("Уведомление о заказе #{} с подтвержденной оплатой отправлено администратору: {}", 
+                    log.debug("Уведомление о заказе #{} с подтвержденной оплатой отправлено администратору: {}",
                             order.getId(), admin.getUsername());
                 } catch (Exception e) {
                     log.error("Ошибка отправки уведомления администратору {}: {}", admin.getUsername(), e.getMessage());
                 }
             }
 
-            log.info("✅ Уведомление о заказе #{} с {} отправлено {} администраторам", 
+            log.info("✅ Уведомление о заказе #{} с {} отправлено {} администраторам",
                     order.getId(), paymentLabel, activeAdmins.size());
 
         } catch (Exception e) {
-            log.error("❌ Ошибка отправки уведомления о заказе #{} с подтвержденной оплатой: {}", 
+            log.error("❌ Ошибка отправки уведомления о заказе #{} с подтвержденной оплатой: {}",
                     order.getId(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Собирает URL фото товаров из заказа (уникальные, максимум 5)
+     */
+    private List<String> collectProductImageUrls(Order order) {
+        List<String> urls = new ArrayList<>();
+        if (order.getItems() == null) return urls;
+
+        for (OrderItem item : order.getItems()) {
+            String url = resolveImageUrl(item.getProduct());
+            if (url != null && !urls.contains(url)) {
+                urls.add(url);
+                if (urls.size() >= 5) break;
+            }
+        }
+        return urls;
+    }
+
+    /**
+     * Разрешает URL изображения товара в полный публичный URL
+     */
+    private String resolveImageUrl(com.baganov.magicvetov.entity.Product product) {
+        if (product == null || product.getImageUrl() == null || product.getImageUrl().isEmpty()) {
+            return null;
+        }
+        try {
+            if (product.getImageUrl().startsWith("products/") || product.getImageUrl().startsWith("categories/")) {
+                return storageService.getPublicUrl(product.getImageUrl());
+            }
+            return product.getImageUrl();
+        } catch (Exception e) {
+            log.error("Ошибка получения URL изображения товара #{}: {}", product.getId(), e.getMessage());
+            return null;
         }
     }
 
