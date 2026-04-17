@@ -234,6 +234,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID:-108401065}
+        NEXT_PUBLIC_VK_PIXEL_ID: ${NEXT_PUBLIC_VK_PIXEL_ID:-3756511}
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ""

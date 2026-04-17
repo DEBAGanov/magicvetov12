@@ -5,6 +5,13 @@ RUN npm ci --ignore-scripts
 
 FROM node:22-alpine AS builder
 WORKDIR /app
+
+# Build-time env vars (NEXT_PUBLIC_* must be available during build)
+ARG NEXT_PUBLIC_YM_ID
+ARG NEXT_PUBLIC_VK_PIXEL_ID
+ENV NEXT_PUBLIC_YM_ID=$NEXT_PUBLIC_YM_ID
+ENV NEXT_PUBLIC_VK_PIXEL_ID=$NEXT_PUBLIC_VK_PIXEL_ID
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
