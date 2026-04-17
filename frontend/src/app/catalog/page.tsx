@@ -13,6 +13,22 @@ import ProductCard from "@/components/product/ProductCard";
 import { productsApi, categoriesApi } from "@/lib/api/client";
 import type { CategoryDTO, ProductDTO } from "@/lib/types";
 
+function getPageRange(current: number, total: number): number[] {
+  const pages: number[] = [];
+  if (total <= 5) {
+    for (let i = 0; i < total; i++) pages.push(i);
+    return pages;
+  }
+  pages.push(0);
+  const start = Math.max(1, current - 1);
+  const end = Math.min(total - 2, current + 1);
+  if (start > 1) pages.push(-1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (end < total - 2) pages.push(-1);
+  pages.push(total - 1);
+  return pages;
+}
+
 function CatalogContent() {
   const params = useSearchParams();
   const categoryId = params.get("category") ? Number(params.get("category")) : null;
@@ -99,16 +115,34 @@ function CatalogContent() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center gap-1 mt-8">
-                  {Array.from({ length: totalPages }).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setPage(i)}
-                      className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${page === i ? "bg-primary-500 text-white" : "border border-gray-200 text-gray-600 hover:border-primary-300"}`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                <div className="flex justify-center items-center gap-1 mt-8">
+                  <button
+                    onClick={() => setPage(Math.max(0, page - 1))}
+                    disabled={page === 0}
+                    className="min-w-[36px] h-9 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:border-primary-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    ‹
+                  </button>
+                  {getPageRange(page, totalPages).map((p, i) =>
+                    p === -1 ? (
+                      <span key={`dot-${i}`} className="min-w-[36px] h-9 flex items-center justify-center text-gray-400">...</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${page === p ? "bg-primary-500 text-white" : "border border-gray-200 text-gray-600 hover:border-primary-300"}`}
+                      >
+                        {p + 1}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                    disabled={page === totalPages - 1}
+                    className="min-w-[36px] h-9 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:border-primary-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    ›
+                  </button>
                 </div>
               )}
             </>
