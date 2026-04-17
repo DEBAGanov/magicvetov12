@@ -177,6 +177,20 @@ export interface DeliveryLocationDTO {
   description?: string;
 }
 
+export interface DeliveryEstimate {
+  deliveryAvailable: boolean;
+  deliveryCost: number;
+  baseCost: number;
+  freeDeliveryThreshold: number;
+  isDeliveryFree: boolean;
+  zoneName: string;
+  zoneDescription?: string;
+  estimatedTimeMin?: number;
+  estimatedTimeMax?: number;
+  estimatedTime?: string;
+  message?: string;
+}
+
 // User profile
 export interface UserProfileResponse {
   id: number;

@@ -17,11 +17,13 @@ import type { CartDTO, CartItemDTO } from "@/lib/types";
 export default function CartPage() {
   const [cart, setCart] = useState<CartDTO | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchCartStore = useCartStore((s) => s.fetchCart);
 
   const fetchCart = async () => {
     try {
       const data = await cartApi.get();
       setCart(data);
+      fetchCartStore();
     } catch {
       setCart(null);
     } finally {

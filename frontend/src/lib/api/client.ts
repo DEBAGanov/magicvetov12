@@ -144,4 +144,6 @@ export const deliveryApi = {
     apiRequest<import("@/lib/types").AddressSuggestion[]>(`/delivery/address-suggestions?query=${encodeURIComponent(query)}`),
   getLocations: () =>
     apiRequest<import("@/lib/types").DeliveryLocationDTO[]>("/delivery/locations"),
+  estimateDelivery: (address: string, orderAmount?: number) =>
+    apiRequest<import("@/lib/types").DeliveryEstimate>(`/delivery/estimate?address=${encodeURIComponent(address)}${orderAmount ? `&orderAmount=${orderAmount}` : ""}`),
 };

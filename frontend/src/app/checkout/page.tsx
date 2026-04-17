@@ -6,17 +6,43 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cartApi, ordersApi, deliveryApi } from "@/lib/api/client";
+import { useCartStore } from "@/lib/store/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
-import type { CartDTO, AddressSuggestion, PaymentMethod } from "@/lib/types";
+import type { CartDTO, AddressSuggestion, PaymentMethod, DeliveryEstimate } from "@/lib/types";
+
+const STORE_ADDRESS = "ул. Володарского, 5";
+const STORE_PHONE = "+7 (964) 861-23-70";
+
+function formatPhoneInput(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  if (!digits.length) return "";
+  const d = digits.startsWith("7") || digits.startsWith("8") ? digits.slice(1) : digits;
+  let formatted = "+7";
+  if (d.length > 0) formatted += ` (${d.slice(0, 3)}`;
+  if (d.length > 3) formatted += `) ${d.slice(3, 6)}`;
+  if (d.length > 6) formatted += `-${d.slice(6, 8)}`;
+  if (d.length > 8) formatted += `-${d.slice(8, 10)}`;
+  return formatted;
+}
+
+function isValidPhone(value: string): boolean {
+  const digits = value.replace(/\D/g, "");
+  const d = digits.startsWith("7") || digits.startsWith("8") ? digits.slice(1) : digits;
+  return d.length === 10;
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
+  const addItem = useCartStore((s) => s.addItem);
+  const fetchCartStore = useCartStore((s) => s.fetchCart);
+
   const [cart, setCart] = useState<CartDTO | null>(null);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -29,10 +55,23 @@ export default function CheckoutPage() {
   const [contactPhone, setContactPhone] = useState("");
   const [comment, setComment] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
+  const [deliveryEstimate, setDeliveryEstimate] = useState<DeliveryEstimate | null>(null);
+  const [estimatingDelivery, setEstimatingDelivery] = useState(false);
 
+  // Load cart + handle "buy in 1 click" productId param
   useEffect(() => {
-    cartApi.get().then(setCart).catch(() => {});
-  }, []);
+    const productId = searchParams.get("productId");
+    if (productId) {
+      addItem(Number(productId)).then(() => {
+        fetchCartStore();
+        cartApi.get().then(setCart).catch(() => {});
+      }).catch(() => {
+        cartApi.get().then(setCart).catch(() => {});
+      });
+    } else {
+      cartApi.get().then(setCart).catch(() => {});
+    }
+  }, [searchParams, addItem, fetchCartStore]);
 
   // Address autocomplete
   useEffect(() => {
@@ -43,17 +82,54 @@ export default function CheckoutPage() {
     return () => clearTimeout(timer);
   }, [address]);
 
-  const totalAmount = cart?.totalAmount || 0;
+  // Delivery cost estimation when address changes
+  const estimateDeliveryCost = useCallback(async (addr: string, amount: number) => {
+    if (addr.length < 5) { setDeliveryEstimate(null); return; }
+    setEstimatingDelivery(true);
+    try {
+      const estimate = await deliveryApi.estimateDelivery(addr, amount);
+      setDeliveryEstimate(estimate);
+    } catch {
+      setDeliveryEstimate(null);
+    } finally {
+      setEstimatingDelivery(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (deliveryType !== "COURIER" || !address) { setDeliveryEstimate(null); return; }
+    const timer = setTimeout(() => {
+      estimateDeliveryCost(address, cart?.totalAmount || 0);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [address, deliveryType, cart?.totalAmount, estimateDeliveryCost]);
+
+  const goodsAmount = cart?.totalAmount || 0;
+  const deliveryCost = deliveryType === "PICKUP" ? 0 : (deliveryEstimate?.deliveryCost ?? 0);
+  const totalAmount = goodsAmount + deliveryCost;
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw.length === 1 && raw === "8") {
+      setContactPhone("+7 (");
+      return;
+    }
+    setContactPhone(formatPhoneInput(raw));
+  };
 
   const submitOrder = async () => {
     if (!contactName || !contactPhone) return;
+    if (!isValidPhone(contactPhone)) {
+      toast.show("Введите корректный номер телефона", "error");
+      return;
+    }
     if (deliveryType === "COURIER" && !address) return;
 
     setSubmitting(true);
     try {
       const order = await ordersApi.create({
         deliveryType: deliveryType === "COURIER" ? "Доставка курьером" : "Самовывоз",
-        deliveryAddress: deliveryType === "COURIER" ? address : "Самовывоз",
+        deliveryAddress: deliveryType === "COURIER" ? address : STORE_ADDRESS,
         deliveryLocationId: deliveryType === "PICKUP" ? 1 : undefined,
         contactName,
         contactPhone: contactPhone.replace(/\D/g, ""),
@@ -102,6 +178,7 @@ export default function CheckoutPage() {
   }
 
   const steps = ["Доставка", "Адрес", "Контакты", "Оплата"];
+  const phoneValid = isValidPhone(contactPhone);
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
@@ -129,11 +206,21 @@ export default function CheckoutPage() {
               <div className="font-semibold">🚗 Доставка</div>
               <div className="text-xs text-gray-500 mt-1">Курьер привезёт к двери</div>
             </button>
-            <button onClick={() => setDeliveryType("PICKUP")} className={`p-4 rounded-xl border-2 text-center transition-colors ${deliveryType === "PICKUP" ? "border-primary-500 bg-primary-50" : "border-gray-200"}`}>
+            <button onClick={() => { setDeliveryType("PICKUP"); setDeliveryEstimate(null); }} className={`p-4 rounded-xl border-2 text-center transition-colors ${deliveryType === "PICKUP" ? "border-primary-500 bg-primary-50" : "border-gray-200"}`}>
               <div className="font-semibold">🏪 Самовывоз</div>
               <div className="text-xs text-gray-500 mt-1">Заберите сами</div>
             </button>
           </div>
+
+          {deliveryType === "PICKUP" && (
+            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <p className="font-semibold text-sm mb-2">Адрес самовывоза:</p>
+              <p className="text-gray-700 text-sm">{STORE_ADDRESS}</p>
+              <p className="text-gray-500 text-sm mt-1">{STORE_PHONE}</p>
+              <p className="text-gray-400 text-xs mt-1">Пн-Пт 7:30–20:00, Сб-Вс 8:00–20:00</p>
+            </div>
+          )}
+
           <button onClick={() => setStep(1)} className="w-full py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600">Далее</button>
         </div>
       )}
@@ -141,32 +228,67 @@ export default function CheckoutPage() {
       {/* Step 1: Address */}
       {step === 1 && (
         <div>
-          <h3 className="font-bold mb-4">Адрес доставки</h3>
+          <h3 className="font-bold mb-4">{deliveryType === "COURIER" ? "Адрес доставки" : "Адрес самовывоза"}</h3>
           {deliveryType === "COURIER" ? (
-            <div className="relative mb-6">
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Улица, дом, квартира"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
-              />
-              {suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl mt-1 max-h-48 overflow-y-auto z-10">
-                  {suggestions.map((s, i) => (
-                    <button key={i} onClick={() => { setAddress(s.value); setSuggestions([]); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-primary-50">
-                      {s.value}
-                    </button>
-                  ))}
+            <div className="mb-6">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Улица, дом, квартира"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                />
+                {suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl mt-1 max-h-48 overflow-y-auto z-10">
+                    {suggestions.map((s, i) => (
+                      <button key={i} onClick={() => { setAddress(s.value); setSuggestions([]); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-primary-50">
+                        {s.value}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {estimatingDelivery && (
+                <p className="text-sm text-gray-400 mt-2">Рассчитываем стоимость доставки...</p>
+              )}
+              {deliveryEstimate && !estimatingDelivery && (
+                <div className={`mt-3 p-3 rounded-xl text-sm ${deliveryEstimate.isDeliveryFree ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-700"}`}>
+                  <div className="flex justify-between items-center">
+                    <span>Доставка ({deliveryEstimate.zoneName})</span>
+                    <span className="font-semibold">{deliveryEstimate.isDeliveryFree ? "Бесплатно" : formatPrice(deliveryEstimate.deliveryCost)}</span>
+                  </div>
+                  {deliveryEstimate.estimatedTime && (
+                    <p className="text-xs text-gray-500 mt-1">Примерное время: {deliveryEstimate.estimatedTime}</p>
+                  )}
+                  {!deliveryEstimate.isDeliveryFree && deliveryEstimate.freeDeliveryThreshold > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">Бесплатная доставка от {formatPrice(deliveryEstimate.freeDeliveryThreshold)}</p>
+                  )}
+                </div>
+              )}
+              {deliveryEstimate && !deliveryEstimate.deliveryAvailable && (
+                <div className="mt-3 p-3 rounded-xl text-sm bg-red-50 text-red-600">
+                  {deliveryEstimate.message || "Доставка по данному адресу недоступна"}
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm mb-6">Вы заберете заказ самостоятельно</p>
+            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <p className="text-gray-700 text-sm font-semibold">{STORE_ADDRESS}</p>
+              <p className="text-gray-500 text-sm mt-1">Вы заберете заказ самостоятельно</p>
+              <p className="text-gray-400 text-sm mt-1">{STORE_PHONE}</p>
+              <p className="text-gray-400 text-xs mt-1">Пн-Пт 7:30–20:00, Сб-Вс 8:00–20:00</p>
+            </div>
           )}
           <div className="flex gap-3">
             <button onClick={() => setStep(0)} className="flex-1 py-3 border border-gray-200 rounded-full font-semibold hover:bg-gray-50">Назад</button>
-            <button onClick={() => setStep(2)} className="flex-1 py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600">Далее</button>
+            <button
+              onClick={() => setStep(2)}
+              disabled={deliveryType === "COURIER" && !address}
+              className="flex-1 py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600 disabled:opacity-50"
+            >
+              Далее
+            </button>
           </div>
         </div>
       )}
@@ -177,12 +299,25 @@ export default function CheckoutPage() {
           <h3 className="font-bold mb-4">Контактные данные</h3>
           <div className="space-y-3 mb-6">
             <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Ваше имя" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-primary-500 outline-none" />
-            <input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+7 (___) ___-__-__" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-primary-500 outline-none" />
+            <div>
+              <input
+                type="tel"
+                value={contactPhone}
+                onChange={handlePhoneChange}
+                placeholder="+7 (___) ___-__-__"
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none ${
+                  contactPhone && !phoneValid ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-primary-500"
+                }`}
+              />
+              {contactPhone && !phoneValid && (
+                <p className="text-xs text-red-500 mt-1">Введите номер полностью в формате +7 (XXX) XXX-XX-XX</p>
+              )}
+            </div>
             <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Комментарий (необязательно)" rows={3} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-primary-500 outline-none resize-none" />
           </div>
           <div className="flex gap-3">
             <button onClick={() => setStep(1)} className="flex-1 py-3 border border-gray-200 rounded-full font-semibold hover:bg-gray-50">Назад</button>
-            <button onClick={() => contactName && contactPhone ? setStep(3) : undefined} className="flex-1 py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600 disabled:opacity-50" disabled={!contactName || !contactPhone}>Далее</button>
+            <button onClick={() => contactName && phoneValid ? setStep(3) : undefined} className="flex-1 py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600 disabled:opacity-50" disabled={!contactName || !phoneValid}>Далее</button>
           </div>
         </div>
       )}
@@ -208,7 +343,25 @@ export default function CheckoutPage() {
 
           {/* Summary */}
           <div className="bg-gray-50 rounded-xl p-4 mb-4">
-            <div className="flex justify-between font-bold text-lg">
+            <div className="flex justify-between text-sm py-2">
+              <span>Товары</span>
+              <span>{formatPrice(goodsAmount)}</span>
+            </div>
+            {deliveryType === "COURIER" && (
+              <div className="flex justify-between text-sm py-2">
+                <span>Доставка {deliveryEstimate ? `(${deliveryEstimate.zoneName})` : ""}</span>
+                <span className={deliveryCost === 0 ? "text-secondary-500" : ""}>
+                  {deliveryCost === 0 ? "Бесплатно" : formatPrice(deliveryCost)}
+                </span>
+              </div>
+            )}
+            {deliveryType === "PICKUP" && (
+              <div className="flex justify-between text-sm py-2">
+                <span>Самовывоз</span>
+                <span className="text-secondary-500">Бесплатно</span>
+              </div>
+            )}
+            <div className="border-t mt-2 pt-3 flex justify-between font-bold text-lg">
               <span>Итого</span>
               <span className="text-primary-500">{formatPrice(totalAmount)}</span>
             </div>

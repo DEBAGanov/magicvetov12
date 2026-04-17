@@ -7,7 +7,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { productsApi } from "@/lib/api/client";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -18,9 +18,12 @@ import type { ProductDTO } from "@/lib/types";
 
 export default function ProductPage() {
   const { productId } = useParams();
+  const router = useRouter();
   const [product, setProduct] = useState<ProductDTO | null>(null);
   const [loading, setLoading] = useState(true);
+  const [oneClickLoading, setOneClickLoading] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
+  const fetchCartStore = useCartStore((s) => s.fetchCart);
   const toast = useToast();
 
   useEffect(() => {
@@ -121,12 +124,24 @@ export default function ProductPage() {
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
               В корзину
             </button>
-            <Link
-              href={`/checkout?productId=${product.id}`}
-              className="px-6 py-3 border-2 border-primary-500 text-primary-500 rounded-full font-semibold hover:bg-primary-50 transition-colors"
+            <button
+              onClick={async () => {
+                setOneClickLoading(true);
+                try {
+                  await addItem(product.id);
+                  await fetchCartStore();
+                  router.push("/checkout");
+                } catch {
+                  toast.show("Ошибка при добавлении", "error");
+                } finally {
+                  setOneClickLoading(false);
+                }
+              }}
+              disabled={oneClickLoading}
+              className="px-6 py-3 border-2 border-primary-500 text-primary-500 rounded-full font-semibold hover:bg-primary-50 transition-colors disabled:opacity-50"
             >
-              Купить в 1 клик
-            </Link>
+              {oneClickLoading ? "Добавляем..." : "Купить в 1 клик"}
+            </button>
           </div>
 
           {/* Delivery info */}

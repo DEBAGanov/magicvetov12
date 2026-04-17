@@ -44,13 +44,15 @@ export default function Footer() {
           <div>
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Контакты</div>
             <div className="flex flex-col gap-2">
-              <a href="tel:+79001234567" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">
-                +7 (900) 123-45-67
+              <a href="tel:+79648612370" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">
+                +7 (964) 861-23-70
               </a>
               <a href="mailto:info@magiacvetov12.ru" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">
                 info@magiacvetov12.ru
               </a>
-              <span className="text-sm text-gray-400">Ежедневно 8:00 — 22:00</span>
+              <span className="text-sm text-gray-400">ул. Володарского, 5</span>
+              <span className="text-sm text-gray-400">Пн-Пт 7:30 — 20:00</span>
+              <span className="text-sm text-gray-400">Сб-Вс 8:00 — 20:00</span>
             </div>
           </div>
         </div>

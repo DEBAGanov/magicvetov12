@@ -9,6 +9,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useCartStore } from "@/lib/store/cart-store";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -61,13 +62,13 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {/* Phone */}
           <a
-            href="tel:+79001234567"
+            href="tel:+79648612370"
             className="hidden lg:flex items-center gap-1 text-sm font-semibold text-gray-800 hover:text-primary-500"
           >
             <svg viewBox="0 0 24 24" className="w-4 h-4 fill-primary-500">
               <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.2 2.2z" />
             </svg>
-            +7 (900) 123-45-67
+            +7 (964) 861-23-70
           </a>
 
           {/* Cart */}
@@ -111,8 +112,8 @@ export default function Header() {
             <Link href="/#reviews" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
               Отзывы
             </Link>
-            <a href="tel:+79001234567" className="py-3 text-base font-bold text-primary-500">
-              +7 (900) 123-45-67
+            <a href="tel:+79648612370" className="py-3 text-base font-bold text-primary-500">
+              +7 (964) 861-23-70
             </a>
           </nav>
         </div>
@@ -122,6 +123,16 @@ export default function Header() {
 }
 
 function CartBadge() {
-  // Will be connected to cart store in later stages
-  return <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-accent-500 text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white" />;
+  const items = useCartStore((s) => s.items);
+  const fetchCart = useCartStore((s) => s.fetchCart);
+  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => { fetchCart(); }, [fetchCart]);
+
+  if (count === 0) return null;
+  return (
+    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-accent-500 text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+      {count}
+    </span>
+  );
 }
