@@ -239,6 +239,8 @@ services:
       NEXT_PUBLIC_API_URL: ""
       INTERNAL_API_URL: "http://app:8080"
       NEXT_PUBLIC_SITE_URL: "https://magiacvetov12.ru"
+      NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID:-108401065}
+      NEXT_PUBLIC_VK_PIXEL_ID: ${NEXT_PUBLIC_VK_PIXEL_ID:-3756511}
     expose:
       - "3000"
     networks:

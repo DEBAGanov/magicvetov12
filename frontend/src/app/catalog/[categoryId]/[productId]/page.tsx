@@ -12,6 +12,7 @@ import Link from "next/link";
 import { productsApi } from "@/lib/api/client";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatPrice } from "@/lib/utils";
+import { trackViewItem, trackAddToCart } from "@/lib/analytics";
 import ProductGallery from "@/components/product/ProductGallery";
 import { useToast } from "@/components/ui/Toast";
 import type { ProductDTO } from "@/lib/types";
@@ -30,7 +31,10 @@ export default function ProductPage() {
     if (!productId) return;
     productsApi
       .getById(Number(productId))
-      .then(setProduct)
+      .then((p) => {
+        setProduct(p);
+        if (p) trackViewItem({ productId: p.id, name: p.name, price: p.discountedPrice || p.price, category: p.categoryName });
+      })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [productId]);
@@ -114,6 +118,13 @@ export default function ProductPage() {
               onClick={async () => {
                 try {
                   await addItem(product.id);
+                  trackAddToCart({
+                    productId: product.id,
+                    name: product.name,
+                    price: displayPrice,
+                    quantity: 1,
+                    category: product.categoryName,
+                  });
                   toast.show("Добавлено в корзину!");
                 } catch {
                   toast.show("Ошибка при добавлении", "error");

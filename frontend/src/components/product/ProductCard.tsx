@@ -11,6 +11,7 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/lib/store/cart-store";
 import { useToast } from "@/components/ui/Toast";
+import { trackAddToCart } from "@/lib/analytics";
 import type { ProductDTO } from "@/lib/types";
 
 export default function ProductCard({ product }: { product: ProductDTO }) {
@@ -117,6 +118,13 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
               e.preventDefault();
               try {
                 await addItem(product.id);
+                trackAddToCart({
+                  productId: product.id,
+                  name: product.name,
+                  price: displayPrice,
+                  quantity: 1,
+                  category: product.categoryName,
+                });
                 toast.show("Добавлено в корзину!");
               } catch {
                 toast.show("Ошибка при добавлении", "error");

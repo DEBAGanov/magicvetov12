@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { cartApi, ordersApi, deliveryApi } from "@/lib/api/client";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatPrice } from "@/lib/utils";
+import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import { useToast } from "@/components/ui/Toast";
 import type { CartDTO, AddressSuggestion, PaymentMethod, DeliveryEstimate } from "@/lib/types";
 
@@ -69,7 +70,15 @@ export default function CheckoutPage() {
         cartApi.get().then(setCart).catch(() => {});
       });
     } else {
-      cartApi.get().then(setCart).catch(() => {});
+      cartApi.get().then((c) => {
+        setCart(c);
+        if (c?.items?.length) {
+          trackBeginCheckout(
+            c.items.map((i) => ({ productId: i.productId, name: i.productName, price: i.price, quantity: i.quantity })),
+            c.totalAmount
+          );
+        }
+      }).catch(() => {});
     }
   }, [searchParams, addItem, fetchCartStore]);
 
@@ -138,6 +147,14 @@ export default function CheckoutPage() {
       });
 
       setOrderId(order.id);
+
+      if (cart?.items?.length) {
+        trackPurchase(
+          order.id,
+          totalAmount,
+          cart.items.map((i) => ({ productId: i.productId, name: i.productName, price: i.price, quantity: i.quantity }))
+        );
+      }
 
       if ((paymentMethod === "SBP" || paymentMethod === "BANK_CARD") && order.id) {
         try {
