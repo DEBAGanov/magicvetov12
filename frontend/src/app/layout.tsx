@@ -55,6 +55,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://magiacvetov12.ru",
   },
+  verification: {
+    yandex: "a971f18e03c62121",
+    google: "Tdi5meg0b55kSN0H3yQGnGmyj96HFKA4EunwMJm19p0",
+  },
   robots: {
     index: true,
     follow: true,
