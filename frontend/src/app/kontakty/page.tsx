@@ -65,21 +65,24 @@ export default function ContactsPage() {
             </div>
           </div>
 
-          <div className="bg-gray-100 rounded-xl overflow-hidden min-h-[300px] flex items-center justify-center">
-            <div className="text-center p-6">
-              <div className="text-5xl mb-3">📍</div>
-              <p className="font-semibold mb-1">Магия Цветов</p>
-              <p className="text-sm text-gray-500">{STORE.address}</p>
-              <p className="text-sm text-gray-400">{STORE.city}</p>
-              <a
-                href={`https://yandex.ru/maps/-/CDaZiE~P`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-3 text-sm text-primary-500 font-medium hover:underline"
-              >
-                Открыть на карте &rarr;
-              </a>
-            </div>
+          <div className="rounded-xl overflow-hidden min-h-[400px] relative">
+            <iframe
+              src="https://yandex.ru/map-widget/v1/?um=constructor%3A174166621256&from=mapframe&ll=48.335696%2C55.870339&z=17"
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              allowFullScreen
+              className="rounded-xl"
+              title="Магия Цветов на карте"
+            />
+            <a
+              href="https://yandex.ru/maps/org/magiya_tsvetov/174166621256/?ll=48.335696%2C55.870339&z=17"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-3 text-sm text-primary-500 font-medium hover:underline"
+            >
+              Открыть на Яндекс Картах &rarr;
+            </a>
           </div>
         </div>
       </div>

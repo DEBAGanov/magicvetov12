@@ -25,6 +25,16 @@ export default function DeliveryInfo() {
           </div>
         ))}
       </div>
+      <div className="mt-8 rounded-xl overflow-hidden">
+        <iframe
+          src="https://yandex.ru/map-widget/v1/?um=constructor%3A174166621256&from=mapframe&ll=48.335696%2C55.870339&z=15"
+          width="100%"
+          height="300"
+          style={{ border: 0 }}
+          allowFullScreen
+          title="Магия Цветов на карте"
+        />
+      </div>
     </section>
   );
 }

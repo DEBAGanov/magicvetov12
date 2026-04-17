@@ -172,6 +172,26 @@ export default function CityLandingContent({
           <p className="text-center text-sm text-gray-500 mt-4">
             Не нашли свой район? Позвоните нам <a href={`tel:${STORE.phoneLink}`} className="text-primary-500 font-medium">{STORE.phone}</a>
           </p>
+          <div className="mt-6 rounded-xl overflow-hidden max-w-3xl mx-auto">
+            <iframe
+              src="https://yandex.ru/map-widget/v1/?um=constructor%3A174166621256&from=mapframe&ll=48.335696%2C55.870339&z=15"
+              width="100%"
+              height="350"
+              style={{ border: 0 }}
+              allowFullScreen
+              title={`Магия Цветов на карте — ${cityData.name}`}
+            />
+          </div>
+          <p className="text-center mt-3">
+            <a
+              href="https://yandex.ru/maps/org/magiya_tsvetov/174166621256/?ll=48.335696%2C55.870339&z=17"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary-500 font-medium hover:underline"
+            >
+              Открыть на Яндекс Картах &rarr;
+            </a>
+          </p>
         </div>
       </section>
 
