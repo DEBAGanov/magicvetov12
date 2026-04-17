@@ -12,6 +12,7 @@ import Footer from "@/components/layout/Footer";
 import MobileNav from "@/components/layout/MobileNav";
 import { ToastProvider } from "@/components/ui/Toast";
 import Analytics from "@/components/Analytics";
+import MaxBotPopup from "@/components/MaxBotPopup";
 import "./globals.css";
 
 const mulish = Mulish({
@@ -78,6 +79,7 @@ export default function RootLayout({
           <div className="flex-1">{children}</div>
           <Footer />
           <MobileNav />
+          <MaxBotPopup />
           <Analytics />
         </ToastProvider>
       </body>

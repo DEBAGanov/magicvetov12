@@ -113,28 +113,40 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
             )}
           </div>
 
-          <button
-            onClick={async (e) => {
-              e.preventDefault();
-              try {
-                await addItem(product.id);
-                trackAddToCart({
-                  productId: product.id,
-                  name: product.name,
-                  price: displayPrice,
-                  quantity: 1,
-                  category: product.categoryName,
-                });
-                toast.show("Добавлено в корзину!");
-              } catch {
-                toast.show("Ошибка при добавлении", "error");
-              }
-            }}
-            className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors shrink-0"
-            title="В корзину"
-          >
-            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <a
+              href="https://m.max.ru/chat/id121602873440_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition-colors shrink-0"
+              title="Заказать через МАХ"
+            >
+              <span className="text-xs font-bold">M</span>
+            </a>
+            <button
+              onClick={async (e) => {
+                e.preventDefault();
+                try {
+                  await addItem(product.id);
+                  trackAddToCart({
+                    productId: product.id,
+                    name: product.name,
+                    price: displayPrice,
+                    quantity: 1,
+                    category: product.categoryName,
+                  });
+                  toast.show("Добавлено в корзину!");
+                } catch {
+                  toast.show("Ошибка при добавлении", "error");
+                }
+              }}
+              className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors shrink-0"
+              title="В корзину"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

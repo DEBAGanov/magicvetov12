@@ -171,6 +171,15 @@ export default function ProductPage() {
             >
               {oneClickLoading ? "Добавляем..." : "Купить в 1 клик"}
             </button>
+            <a
+              href="https://m.max.ru/chat/id121602873440_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 bg-green-500 text-white rounded-full font-semibold hover:bg-green-600 transition-colors flex items-center gap-2"
+            >
+              <span className="text-sm font-bold">M</span>
+              Заказать через МАХ
+            </a>
           </div>
 
           {/* Delivery info */}
