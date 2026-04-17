@@ -13,13 +13,13 @@ export default function HeroBanner() {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium mb-4">
-              Свежие цветы каждый день
+              Доставка по Волжску и Зеленодольску
             </span>
             <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-              Букеты, которые <span className="text-primary-500">говорят</span> за вас
+              Доставка цветов — букеты, которые <span className="text-primary-500">говорят</span> за вас
             </h1>
             <p className="text-gray-600 text-lg mb-6 max-w-lg">
-              Доставляем свежие цветы в день заказа. Авторские букеты, розы, тюльпаны и цветы на любой повод.
+              Свежие цветы с доставкой за 2 часа. Авторские букеты, розы, тюльпаны и цветы на любой повод в Волжске и Зеленодольске.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/catalog" className="px-6 py-3 bg-primary-500 text-white rounded-full font-semibold hover:bg-primary-600 transition-colors">

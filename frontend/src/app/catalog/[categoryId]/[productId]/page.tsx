@@ -15,6 +15,7 @@ import { formatPrice } from "@/lib/utils";
 import { trackViewItem, trackAddToCart } from "@/lib/analytics";
 import ProductGallery from "@/components/product/ProductGallery";
 import { useToast } from "@/components/ui/Toast";
+import { JsonLd, productSchema, breadcrumbSchema } from "@/components/seo/JsonLd";
 import type { ProductDTO } from "@/lib/types";
 
 export default function ProductPage() {
@@ -77,6 +78,23 @@ export default function ProductPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      <JsonLd data={[
+        productSchema({
+          name: product.name,
+          description: product.description || `Букет ${product.name}`,
+          image: product.imageUrl,
+          price: product.price,
+          discountedPrice: product.discountedPrice,
+          url: `https://magiacvetov12.ru/catalog/${product.categoryId}/${product.id}`,
+          inStock: product.isAvailable,
+        }),
+        breadcrumbSchema([
+          { name: "Главная", url: "https://magiacvetov12.ru" },
+          { name: "Каталог", url: "https://magiacvetov12.ru/catalog" },
+          { name: product.name, url: `https://magiacvetov12.ru/catalog/${product.categoryId}/${product.id}` },
+        ]),
+      ]} />
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6 flex-wrap">
         <Link href="/" className="hover:text-primary-500">Главная</Link>

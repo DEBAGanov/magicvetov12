@@ -47,13 +47,13 @@ export default function Header() {
           <Link href="/catalog" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
             Каталог
           </Link>
-          <Link href="/#delivery" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
+          <Link href="/dostavka-cvetov/volzhsk" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
             Доставка
           </Link>
           <Link href="/#faq" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
             FAQ
           </Link>
-          <Link href="/#reviews" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
+          <Link href="/otzyvy" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
             Отзывы
           </Link>
         </nav>
@@ -103,13 +103,13 @@ export default function Header() {
             <Link href="/catalog" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
               Каталог
             </Link>
-            <Link href="/#delivery" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
+            <Link href="/dostavka-cvetov/volzhsk" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
               Доставка
             </Link>
             <Link href="/#faq" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
               FAQ
             </Link>
-            <Link href="/#reviews" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
+            <Link href="/otzyvy" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
               Отзывы
             </Link>
             <a href="tel:+79648612370" className="py-3 text-base font-bold text-primary-500">
