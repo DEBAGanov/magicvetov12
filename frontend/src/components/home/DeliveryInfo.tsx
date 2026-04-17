@@ -27,7 +27,7 @@ export default function DeliveryInfo() {
       </div>
       <div className="mt-8 rounded-xl overflow-hidden">
         <iframe
-          src="https://yandex.ru/map-widget/v1/?um=constructor%3A174166621256&from=mapframe&ll=48.335696%2C55.870339&z=15"
+          src="https://yandex.ru/map-widget/v1/?z=15&ol=biz&oid=174166621256"
           width="100%"
           height="300"
           style={{ border: 0 }}

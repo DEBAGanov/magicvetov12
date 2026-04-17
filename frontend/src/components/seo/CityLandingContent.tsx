@@ -174,7 +174,7 @@ export default function CityLandingContent({
           </p>
           <div className="mt-6 rounded-xl overflow-hidden max-w-3xl mx-auto">
             <iframe
-              src="https://yandex.ru/map-widget/v1/?um=constructor%3A174166621256&from=mapframe&ll=48.335696%2C55.870339&z=15"
+              src="https://yandex.ru/map-widget/v1/?z=15&ol=biz&oid=174166621256"
               width="100%"
               height="350"
               style={{ border: 0 }}
