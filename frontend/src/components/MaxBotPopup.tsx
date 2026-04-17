@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 
-const MAX_BOT_URL = "https://m.max.ru/chat/id121602873440_bot";
+const MAX_BOT_URL = "https://max.ru/id121602873440_bot";
 const INACTIVITY_MS = 45_000; // 45 seconds of inactivity
 const SESSION_KEY = "mc_popup_shown";
 

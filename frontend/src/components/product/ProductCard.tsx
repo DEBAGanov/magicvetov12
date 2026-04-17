@@ -115,7 +115,7 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
 
           <div className="flex items-center gap-1.5">
             <a
-              href="https://m.max.ru/chat/id121602873440_bot"
+              href="https://max.ru/id121602873440_bot"
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
