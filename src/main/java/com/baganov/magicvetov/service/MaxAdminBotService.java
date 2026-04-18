@@ -1480,7 +1480,7 @@ public class MaxAdminBotService {
         // Строка 2: 📞 Связь с поддержкой - открывает чат с ботом
         Map<String, Object> supportButton = new HashMap<>();
         supportButton.put("type", "link");
-        supportButton.put("text", "📞 Связь с поддержкой");
+        supportButton.put("text", "📞 написать онлайн-менеджеру");
         supportButton.put("url", "https://max.ru/id121603899498_bot");
         buttonRows.add(List.of(supportButton));
 
@@ -1513,7 +1513,7 @@ public class MaxAdminBotService {
         // Строка 2: 📞 Связь с поддержкой - открывает чат с ботом
         Map<String, Object> supportButton = new HashMap<>();
         supportButton.put("type", "link");
-        supportButton.put("text", "📞 Связь с поддержкой");
+        supportButton.put("text", "📞 написать онлайн-менеджеру");
         supportButton.put("url", "https://max.ru/u/f9LHodD0cOLR83c5F5U0c2SbgWoa7PRiBiEsz8WYMGec4cgJATw4If-f_Nc");
         buttonRows.add(List.of(supportButton));
 

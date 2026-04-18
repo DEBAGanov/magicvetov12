@@ -768,18 +768,10 @@ public class MaxUserBotPollingService {
             menuButton.put("url", "https://max.ru/id121602873440_bot?startapp");
             buttonRows.add(List.of(menuButton));
 
-            // Кнопка: Поделиться контактом (только если нет телефона)
-            if (!hasPhone) {
-                Map<String, Object> contactButton = new HashMap<>();
-                contactButton.put("type", "request_contact");
-                contactButton.put("text", "📱 Поделиться телефоном");
-                buttonRows.add(List.of(contactButton));
-            }
-
             // Кнопка: Связь с поддержкой (link тип для открытия URL)
             Map<String, Object> supportButton = new HashMap<>();
             supportButton.put("type", "link");
-            supportButton.put("text", "📞 Связь с поддержкой");
+            supportButton.put("text", "📞 написать онлайн-менеджеру");
             supportButton.put("url", "https://max.ru/u/f9LHodD0cOLntZ_-fT2vQ_TC2goPd1KD3E48k309fX_KUv4aGYawlXRscU8");
             buttonRows.add(List.of(supportButton));
 
