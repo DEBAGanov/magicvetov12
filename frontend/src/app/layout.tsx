@@ -37,7 +37,10 @@ export const metadata: Metadata = {
     "букет на день рождения", "свадебные букеты", "цветы на 8 марта",
   ],
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
