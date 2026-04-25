@@ -27,6 +27,13 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/na-1-sentyabrya`, lastModified: "2026-04-20", changeFrequency: "monthly", priority: 0.75 },
   { url: `${SITE_URL}/na-den-materi`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.8 },
   { url: `${SITE_URL}/na-novyj-god`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/na-rozhdenie-rebenka`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/na-svidanie`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.75 },
+  { url: `${SITE_URL}/na-korporativ`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.75 },
+  { url: `${SITE_URL}/pozdravlenie-s-dnem-rozhdeniya`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/otkrytka`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.7 },
+  { url: `${SITE_URL}/izvinenie`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.75 },
+  { url: `${SITE_URL}/spasibo`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.75 },
 
   // Category pages
   { url: `${SITE_URL}/rozy`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.85 },
