@@ -6,7 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { STORE } from "@/lib/seo/constants";
-import { JsonLd, faqSchema } from "@/components/seo/JsonLd";
+import { JsonLd, faqSchema, breadcrumbSchema } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
   title: "Доставка цветов — условия, стоимость и зоны доставки | Магия Цветов",
@@ -24,7 +24,10 @@ const deliveryFaqs = [
 export default function DeliveryPage() {
   return (
     <>
-      <JsonLd data={faqSchema(deliveryFaqs)} />
+      <JsonLd data={[faqSchema(deliveryFaqs), breadcrumbSchema([
+        { name: "Главная", url: "https://magiacvetov12.ru" },
+        { name: "Доставка и оплата", url: "https://magiacvetov12.ru/dostavka" },
+      ])]} />
       <div className="container mx-auto px-4 py-10 max-w-3xl">
         <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
           <Link href="/" className="hover:text-primary-500">Главная</Link>

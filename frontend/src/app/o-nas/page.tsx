@@ -6,7 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { STORE } from "@/lib/seo/constants";
-import { JsonLd, organizationSchema } from "@/components/seo/JsonLd";
+import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
   title: "О компании Магия Цветов — доставка цветов по Зеленодольску и Волжску",
@@ -18,7 +18,10 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <JsonLd data={organizationSchema()} />
+      <JsonLd data={[organizationSchema(), breadcrumbSchema([
+        { name: "Главная", url: "https://magiacvetov12.ru" },
+        { name: "О нас", url: "https://magiacvetov12.ru/o-nas" },
+      ])]} />
       <div className="container mx-auto px-4 py-10 max-w-3xl">
         <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
           <Link href="/" className="hover:text-primary-500">Главная</Link>

@@ -54,6 +54,8 @@ export default function Footer() {
               <Link href="/o-nas" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">О нас</Link>
               <Link href="/otzyvy" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Отзывы</Link>
               <Link href="/kontakty" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Контакты</Link>
+              <Link href="/blog" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Блог</Link>
+              <Link href="/faq" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Вопросы и ответы</Link>
             </div>
           </div>
 

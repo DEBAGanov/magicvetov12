@@ -50,8 +50,8 @@ export default function Header() {
           <Link href="/dostavka-cvetov/volzhsk" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
             Доставка
           </Link>
-          <Link href="/#faq" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
-            FAQ
+          <Link href="/blog" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
+            Блог
           </Link>
           <Link href="/otzyvy" className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
             Отзывы
@@ -106,8 +106,8 @@ export default function Header() {
             <Link href="/dostavka-cvetov/volzhsk" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
               Доставка
             </Link>
-            <Link href="/#faq" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
-              FAQ
+            <Link href="/blog" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
+              Блог
             </Link>
             <Link href="/otzyvy" onClick={() => setMobileMenuOpen(false)} className="py-3 text-base font-medium text-gray-800">
               Отзывы
