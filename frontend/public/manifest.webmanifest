@@ -1,0 +1,29 @@
+{
+  "name": "Магия Цветов — Доставка цветов",
+  "short_name": "Магия Цветов",
+  "description": "Доставка свежих цветов по Зеленодольску, Волжску и Казани. Букеты от 990 ₽, доставка за 2 часа.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#DC2626",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "orientation": "portrait"
+}

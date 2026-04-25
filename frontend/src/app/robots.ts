@@ -1,6 +1,6 @@
 /**
  * @file: app/robots.ts
- * @description: Robots.txt configuration
+ * @description: Robots.txt configuration for search engine crawlers
  * @created: 2026-04-15
  */
 
@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/account/", "/checkout", "/cart"],
+        disallow: ["/account/", "/checkout", "/cart", "/search"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

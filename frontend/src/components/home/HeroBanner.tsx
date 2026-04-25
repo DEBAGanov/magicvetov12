@@ -16,7 +16,7 @@ export default function HeroBanner() {
               Доставка по Волжску и Зеленодольску
             </span>
             <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-              Доставка цветов — букеты, которые <span className="text-primary-500">говорят</span> за вас
+              Доставка цветов по Волжску и Зеленодольску — букеты, которые <span className="text-primary-500">говорят</span> за вас
             </h1>
             <p className="text-gray-600 text-lg mb-6 max-w-lg">
               Свежие цветы с доставкой за 2 часа. Авторские букеты, розы, тюльпаны и цветы на любой повод в Волжске и Зеленодольске.
