@@ -53,6 +53,11 @@ export default function Footer() {
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Каталог</div>
             <div className="flex flex-col gap-2">
               <Link href="/catalog" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Все цветы</Link>
+              <Link href="/rozy" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Розы</Link>
+              <Link href="/tyulpany" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Тюльпаны</Link>
+              <Link href="/cvety-v-korobke" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">В коробке</Link>
+              <Link href="/korziny-s-cvetami" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Корзины</Link>
+              <Link href="/nedorogie-cvety" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Недорогие</Link>
               <Link href="/catalog?filter=special" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Акции</Link>
             </div>
           </div>

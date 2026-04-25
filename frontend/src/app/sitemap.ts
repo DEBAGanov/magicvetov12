@@ -25,6 +25,15 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/na-8-marta`, lastModified: "2026-04-20", changeFrequency: "monthly", priority: 0.85 },
   { url: `${SITE_URL}/na-14-fevralya`, lastModified: "2026-04-20", changeFrequency: "monthly", priority: 0.85 },
   { url: `${SITE_URL}/na-1-sentyabrya`, lastModified: "2026-04-20", changeFrequency: "monthly", priority: 0.75 },
+  { url: `${SITE_URL}/na-den-materi`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/na-novyj-god`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.8 },
+
+  // Category pages
+  { url: `${SITE_URL}/rozy`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.85 },
+  { url: `${SITE_URL}/tyulpany`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/cvety-v-korobke`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/korziny-s-cvetami`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.75 },
+  { url: `${SITE_URL}/nedorogie-cvety`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.8 },
 
   // Info pages
   { url: `${SITE_URL}/o-nas`, lastModified: "2026-04-15", changeFrequency: "monthly", priority: 0.6 },
