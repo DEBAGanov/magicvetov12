@@ -70,7 +70,7 @@ export function floristSchema() {
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "4.8",
-      reviewCount: "156",
+      reviewCount: "6",
       bestRating: "5",
       worstRating: "1",
     },

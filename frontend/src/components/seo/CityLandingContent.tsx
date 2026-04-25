@@ -234,6 +234,53 @@ export default function CityLandingContent({
       {/* SEO Text */}
       <SeoText>{seoText}</SeoText>
 
+      {/* Cross-links: occasions */}
+      <section className="container mx-auto px-4 py-10 border-t border-gray-100">
+        <h2 className="text-xl font-bold mb-6 text-center">Цветы на любой повод в {cityData.namePrepositional}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
+          {[
+            { href: "/na-den-rozhdeniya", label: "День рождения", emoji: "🎂" },
+            { href: "/na-yubilej", label: "Юбилей", emoji: "🎉" },
+            { href: "/na-svadbu", label: "Свадьба", emoji: "💍" },
+            { href: "/na-14-fevralya", label: "14 февраля", emoji: "❤️" },
+            { href: "/na-8-marta", label: "8 марта", emoji: "🌷" },
+            { href: "/na-vypusknoj", label: "Выпускной", emoji: "🎓" },
+            { href: "/na-1-sentyabrya", label: "1 сентября", emoji: "📚" },
+            { href: "/faq", label: "Вопросы и ответы", emoji: "❓" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="group flex items-center gap-2 p-3 bg-white rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-sm transition-all text-sm"
+            >
+              <span>{link.emoji}</span>
+              <span className="font-medium text-gray-700 group-hover:text-primary-500">{link.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Cross-link: other city */}
+      {city === "volzhsk" ? (
+        <section className="bg-primary-50/30">
+          <div className="container mx-auto px-4 py-8 text-center">
+            <p className="text-gray-600 mb-2">Также осуществляем доставку в соседний город:</p>
+            <Link href="/dostavka-cvetov/zelenodolsk" className="text-primary-500 font-bold text-lg hover:underline">
+              Доставка цветов по Зеленодольску &rarr;
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <section className="bg-primary-50/30">
+          <div className="container mx-auto px-4 py-8 text-center">
+            <p className="text-gray-600 mb-2">Также осуществляем доставку в соседний город:</p>
+            <Link href="/dostavka-cvetov/volzhsk" className="text-primary-500 font-bold text-lg hover:underline">
+              Доставка цветов по Волжску &rarr;
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* CTA */}
       <section className="bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center py-12">
         <div className="container mx-auto px-4">

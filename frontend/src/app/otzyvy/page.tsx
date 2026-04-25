@@ -10,12 +10,27 @@ import { JsonLd, breadcrumbSchema } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
   title: "Отзывы о Магии Цветов — доставка цветов | Рейтинг и оценки",
-  description: "Читайте реальные отзывы о доставке цветов Магия Цветов. Доставка по Зеленодольску, Волжску и Казани. Свежие цветы, быстрая доставка.",
-  keywords: ["магия цветов отзывы", "отзывы доставка цветов волжск", "цветочный магазин отзывы зеленодольск"],
+  description: "Читайте реальные отзывы о доставке цветов Магия Цветов. Рейтинг 4.8 из 5. Доставка по Зеленодольску и Волжску. Свежие цветы, быстрая доставка.",
+  keywords: ["магия цветов отзывы", "отзывы доставка цветов волжск", "цветочный магазин отзывы зеленодольск", "отзывы о цветочной доставке"],
   alternates: { canonical: "https://magiacvetov12.ru/otzyvy" },
+  openGraph: {
+    title: "Отзывы о Магии Цветов — рейтинг 4.8 из 5",
+    description: "Реальные отзывы клиентов о доставке цветов в Волжске и Зеленодольске.",
+    locale: "ru_RU",
+    type: "website",
+  },
 };
 
 export default function ReviewsPage() {
+  const reviewSchemas = REVIEWS.map((review) => ({
+    "@type": "Review",
+    author: { "@type": "Person", name: review.name },
+    datePublished: review.date,
+    reviewBody: review.text,
+    reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+    itemReviewed: { "@type": "Florist", name: "Магия Цветов", address: STORE.address },
+  }));
+
   const aggregateSchema = {
     "@context": "https://schema.org",
     "@type": "AggregateRating",
@@ -28,7 +43,7 @@ export default function ReviewsPage() {
 
   return (
     <>
-      <JsonLd data={[aggregateSchema, breadcrumbSchema([
+      <JsonLd data={[aggregateSchema, ...reviewSchemas, breadcrumbSchema([
         { name: "Главная", url: "https://magiacvetov12.ru" },
         { name: "Отзывы", url: "https://magiacvetov12.ru/otzyvy" },
       ])]} />
