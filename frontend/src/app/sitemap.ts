@@ -34,6 +34,7 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/otkrytka`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.7 },
   { url: `${SITE_URL}/izvinenie`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.75 },
   { url: `${SITE_URL}/spasibo`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.75 },
+  { url: `${SITE_URL}/na-godovshchinu`, lastModified: "2026-04-25", changeFrequency: "monthly", priority: 0.8 },
 
   // Category pages
   { url: `${SITE_URL}/rozy`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.85 },
@@ -41,6 +42,34 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/cvety-v-korobke`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.8 },
   { url: `${SITE_URL}/korziny-s-cvetami`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.75 },
   { url: `${SITE_URL}/nedorogie-cvety`, lastModified: "2026-04-25", changeFrequency: "weekly", priority: 0.8 },
+
+  // Flower type pages
+  { url: `${SITE_URL}/s-hrizantemami`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.75 },
+  { url: `${SITE_URL}/s-alstromeriyami`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.75 },
+  { url: `${SITE_URL}/s-gerberami`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.75 },
+  { url: `${SITE_URL}/s-orhideyami`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.75 },
+  { url: `${SITE_URL}/s-eustomoy`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.75 },
+  { url: `${SITE_URL}/s-gortenziey`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.75 },
+
+  // Recipient pages
+  { url: `${SITE_URL}/zhene`, lastModified: "2026-04-27", changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/devushke`, lastModified: "2026-04-27", changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/mame`, lastModified: "2026-04-27", changeFrequency: "monthly", priority: 0.8 },
+  { url: `${SITE_URL}/muzhchine`, lastModified: "2026-04-27", changeFrequency: "monthly", priority: 0.75 },
+  { url: `${SITE_URL}/kollegam`, lastModified: "2026-04-27", changeFrequency: "monthly", priority: 0.7 },
+
+  // Rose type pages
+  { url: `${SITE_URL}/51-roza`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/101-roza`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/belye-rozy`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/krasnye-rozy`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/rozovye-rozy`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+
+  // Price pages
+  { url: `${SITE_URL}/do-2500`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/ot-2500-do-3500`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/ot-3500-do-5000`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/premium-bukety`, lastModified: "2026-04-27", changeFrequency: "weekly", priority: 0.8 },
 
   // Info pages
   { url: `${SITE_URL}/o-nas`, lastModified: "2026-04-15", changeFrequency: "monthly", priority: 0.6 },

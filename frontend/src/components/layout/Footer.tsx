@@ -29,13 +29,11 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-5 text-sm">
           {/* About + NAP */}
           <div>
             <div className="text-lg font-bold text-primary-300 mb-2">Магия Цветов</div>
-            <p className="text-sm text-gray-400 leading-relaxed mb-3">
-              Доставка свежих цветов по Волжску и Зеленодольску.
-            </p>
+            <p className="text-gray-400 leading-relaxed mb-3">Доставка свежих цветов по Волжску и Зеленодольску.</p>
             <address className="not-italic text-xs text-gray-500 space-y-0.5">
               <p>ул. Володарского, 5, Волжск</p>
               <a href="tel:+79648612370" className="block text-gray-300 hover:text-primary-300">+7 (964) 861-23-70</a>
@@ -47,12 +45,13 @@ export default function Footer() {
           <div>
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Каталог</div>
             <div className="flex flex-col gap-1.5">
-              <Link href="/catalog" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Все цветы</Link>
-              <Link href="/rozy" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Розы</Link>
-              <Link href="/tyulpany" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Тюльпаны</Link>
-              <Link href="/cvety-v-korobke" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">В коробке</Link>
-              <Link href="/korziny-s-cvetami" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Корзины</Link>
-              <Link href="/nedorogie-cvety" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Недорогие</Link>
+              <Link href="/catalog" className="text-gray-300 hover:text-primary-300">Все цветы</Link>
+              <Link href="/rozy" className="text-gray-300 hover:text-primary-300">Розы</Link>
+              <Link href="/tyulpany" className="text-gray-300 hover:text-primary-300">Тюльпаны</Link>
+              <Link href="/s-hrizantemami" className="text-gray-300 hover:text-primary-300">Хризантемы</Link>
+              <Link href="/s-gerberami" className="text-gray-300 hover:text-primary-300">Герберы</Link>
+              <Link href="/s-orhideyami" className="text-gray-300 hover:text-primary-300">Орхидеи</Link>
+              <Link href="/s-eustomoy" className="text-gray-300 hover:text-primary-300">Эустома</Link>
             </div>
           </div>
 
@@ -100,18 +99,26 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Доставка */}
+          {/* Доставка + Кому + По цене */}
           <div>
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Доставка</div>
-            <div className="flex flex-col gap-1.5 mb-4">
-              <Link href="/dostavka-cvetov/volzhsk" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Волжск</Link>
-              <Link href="/dostavka-cvetov/zelenodolsk" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Зеленодольск</Link>
-              <Link href="/dostavka" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Условия доставки</Link>
+            <div className="flex flex-col gap-1.5 mb-3">
+              <Link href="/dostavka-cvetov/volzhsk" className="text-gray-300 hover:text-primary-300">Волжск</Link>
+              <Link href="/dostavka-cvetov/zelenodolsk" className="text-gray-300 hover:text-primary-300">Зеленодольск</Link>
             </div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Контакты</div>
-            <div className="flex flex-col gap-1">
-              <a href="tel:+79648612370" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">+7 (964) 861-23-70</a>
-              <a href="mailto:info@magiacvetov12.ru" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">info@magiacvetov12.ru</a>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Кому</div>
+            <div className="flex flex-col gap-1.5 mb-3">
+              <Link href="/zhene" className="text-gray-300 hover:text-primary-300">Жене</Link>
+              <Link href="/devushke" className="text-gray-300 hover:text-primary-300">Девушке</Link>
+              <Link href="/mame" className="text-gray-300 hover:text-primary-300">Маме</Link>
+              <Link href="/muzhchine" className="text-gray-300 hover:text-primary-300">Мужчине</Link>
+            </div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">По цене</div>
+            <div className="flex flex-col gap-1.5">
+              <Link href="/do-2500" className="text-gray-300 hover:text-primary-300">до 2 500 ₽</Link>
+              <Link href="/ot-2500-do-3500" className="text-gray-300 hover:text-primary-300">2 500–3 500 ₽</Link>
+              <Link href="/ot-3500-do-5000" className="text-gray-300 hover:text-primary-300">3 500–5 000 ₽</Link>
+              <Link href="/premium-bukety" className="text-gray-300 hover:text-primary-300">Premium</Link>
             </div>
           </div>
         </div>
