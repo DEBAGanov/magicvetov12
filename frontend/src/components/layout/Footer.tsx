@@ -49,9 +49,14 @@ export default function Footer() {
               <Link href="/rozy" className="text-gray-300 hover:text-primary-300">Розы</Link>
               <Link href="/tyulpany" className="text-gray-300 hover:text-primary-300">Тюльпаны</Link>
               <Link href="/s-hrizantemami" className="text-gray-300 hover:text-primary-300">Хризантемы</Link>
+              <Link href="/s-alstromeriyami" className="text-gray-300 hover:text-primary-300">Альстромерии</Link>
               <Link href="/s-gerberami" className="text-gray-300 hover:text-primary-300">Герберы</Link>
               <Link href="/s-orhideyami" className="text-gray-300 hover:text-primary-300">Орхидеи</Link>
               <Link href="/s-eustomoy" className="text-gray-300 hover:text-primary-300">Эустома</Link>
+              <Link href="/s-gortenziey" className="text-gray-300 hover:text-primary-300">Гортензия</Link>
+              <Link href="/cvety-v-korobke" className="text-gray-300 hover:text-primary-300">В коробке</Link>
+              <Link href="/korziny-s-cvetami" className="text-gray-300 hover:text-primary-300">Корзины</Link>
+              <Link href="/nedorogie-cvety" className="text-gray-300 hover:text-primary-300">Недорогие</Link>
             </div>
           </div>
 
@@ -112,6 +117,15 @@ export default function Footer() {
               <Link href="/devushke" className="text-gray-300 hover:text-primary-300">Девушке</Link>
               <Link href="/mame" className="text-gray-300 hover:text-primary-300">Маме</Link>
               <Link href="/muzhchine" className="text-gray-300 hover:text-primary-300">Мужчине</Link>
+              <Link href="/kollegam" className="text-gray-300 hover:text-primary-300">Коллегам</Link>
+            </div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Розы</div>
+            <div className="flex flex-col gap-1.5 mb-3">
+              <Link href="/krasnye-rozy" className="text-gray-300 hover:text-primary-300">Красные</Link>
+              <Link href="/belye-rozy" className="text-gray-300 hover:text-primary-300">Белые</Link>
+              <Link href="/rozovye-rozy" className="text-gray-300 hover:text-primary-300">Розовые</Link>
+              <Link href="/51-roza" className="text-gray-300 hover:text-primary-300">51 роза</Link>
+              <Link href="/101-roza" className="text-gray-300 hover:text-primary-300">101 роза</Link>
             </div>
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">По цене</div>
             <div className="flex flex-col gap-1.5">
