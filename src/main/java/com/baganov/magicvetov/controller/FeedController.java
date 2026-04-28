@@ -53,6 +53,33 @@ public class FeedController {
     }
 
     /**
+     * Получение YML фида для Яндекс Вебмастер (дополненное представление в поиске)
+     *
+     * URL: /feed/yandex_webmaster.yml
+     *
+     * @return XML содержимое фида
+     */
+    @GetMapping(value = "/yandex_webmaster.yml", produces = "application/xml;charset=UTF-8")
+    @Operation(
+            summary = "Получение YML фида (Яндекс Вебмастер)",
+            description = "Возвращает фид товаров для дополненного представления в поиске Яндекса"
+    )
+    public ResponseEntity<String> getYandexWebmasterFeed() {
+        log.info("📥 Запрос YML фида для Яндекс Вебмастер (yandex_webmaster.yml)");
+
+        try {
+            String ymlContent = feedService.generateYandexWebmasterFeed();
+            log.info("✅ YML фид для Вебмастер сгенерирован");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("application/xml;charset=UTF-8"))
+                    .body(ymlContent);
+        } catch (Exception e) {
+            log.error("❌ Ошибка генерации YML фида для Вебмастер: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
      * Корневой путь /feed/ - редирект на yandex_business.yml
      */
     @GetMapping(value = {"/", ""}, produces = "application/xml;charset=UTF-8")

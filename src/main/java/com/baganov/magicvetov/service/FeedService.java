@@ -45,6 +45,9 @@ public class FeedService {
     @Value("${app.feed.product-url:https://max.ru/id121602873440_bot}")
     private String productFeedUrl;
 
+    @Value("${app.site-url:https://magiacvetov12.ru}")
+    private String siteUrl;
+
     @Value("${app.avito.manager-name:Магия Цветов}")
     private String avitoManagerName;
 
@@ -105,6 +108,141 @@ public class FeedService {
 
         log.info("✅ YML фид успешно сгенерирован: {} символов", yml.length());
         return yml.toString();
+    }
+
+    /**
+     * Генерация YML фида для Яндекс Вебмастер (дополненное представление в поиске)
+     *
+     * Ключевые отличия от Business-фида:
+     * - URL товаров ведут на сайт, а не на бота
+     * - available="true" на каждом оффере
+     * - delivery, sales_notes
+     * - до 5 картинок на товар
+     * - корректное использование элементов по спецификации YML
+     */
+    @Transactional(readOnly = true)
+    public String generateYandexWebmasterFeed() {
+        log.info("🔄 Генерация YML фида для Яндекс Вебмастер...");
+
+        List<Category> categories = categoryRepository.findAll().stream()
+                .filter(c -> c.getIsActive() != null && c.getIsActive())
+                .toList();
+
+        List<Product> products = productRepository.findAllAvailableWithImages();
+
+        log.info("📊 Вебмастер фид: {} категорий, {} товаров", categories.size(), products.size());
+
+        StringBuilder yml = new StringBuilder();
+        yml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+        yml.append("<!DOCTYPE yml_catalog SYSTEM \"shops.dtd\">\n");
+
+        String currentDate = OffsetDateTime.now().format(DATE_FORMATTER);
+        yml.append("<yml_catalog date=\"").append(currentDate).append("\">\n");
+
+        yml.append("<shop>\n");
+        yml.append("<name>").append(escapeXml(shopName)).append("</name>\n");
+        yml.append("<company>").append(escapeXml(shopCompany)).append("</company>\n");
+        yml.append("<url>").append(escapeXml(siteUrl)).append("</url>\n");
+
+        // currencies ДО offers
+        yml.append("<currencies>\n");
+        yml.append("<currency id=\"RUR\" rate=\"1\"/>\n");
+        yml.append("</currencies>\n");
+
+        // categories ДО offers
+        yml.append("<categories>\n");
+        for (Category category : categories) {
+            yml.append("<category id=\"").append(category.getId()).append("\"");
+            yml.append(">").append(escapeXml(category.getName())).append("</category>\n");
+        }
+        yml.append("</categories>\n");
+
+        yml.append("<offers>\n");
+        for (Product product : products) {
+            yml.append(buildWebmasterOffer(product));
+        }
+        yml.append("</offers>\n");
+
+        yml.append("</shop>\n");
+        yml.append("</yml_catalog>\n");
+
+        log.info("✅ YML фид для Вебмастер сгенерирован: {} символов", yml.length());
+        return yml.toString();
+    }
+
+    /**
+     * Генерация оффера для Яндекс Вебмастер
+     */
+    private String buildWebmasterOffer(Product product) {
+        StringBuilder offer = new StringBuilder();
+
+        BigDecimal price = product.getDiscountedPrice() != null
+                ? product.getDiscountedPrice()
+                : product.getPrice();
+
+        BigDecimal oldPrice = product.getDiscountedPrice() != null ? product.getPrice() : null;
+
+        offer.append("<offer id=\"").append(product.getId()).append("\" available=\"true\">\n");
+
+        // URL на страницу товара на сайте
+        String productUrl = siteUrl;
+        if (product.getCategory() != null) {
+            productUrl += "/catalog/" + product.getCategory().getId() + "/" + product.getId();
+        } else {
+            productUrl += "/catalog/" + product.getId();
+        }
+        offer.append("<url>").append(escapeXml(productUrl)).append("</url>\n");
+
+        offer.append("<price>").append(price.intValue()).append("</price>\n");
+
+        if (oldPrice != null) {
+            offer.append("<oldprice>").append(oldPrice.intValue()).append("</oldprice>\n");
+        }
+
+        offer.append("<currencyId>RUR</currencyId>\n");
+
+        if (product.getCategory() != null) {
+            offer.append("<categoryId>").append(product.getCategory().getId()).append("</categoryId>\n");
+        }
+
+        // Картинки — до 5 штук
+        List<String> allImages = getAllProductImages(product);
+        int imageCount = 0;
+        for (String imageUrl : allImages) {
+            if (imageCount >= 5) break;
+            String fullUrl = getFullImageUrl(imageUrl);
+            if (!fullUrl.isEmpty()) {
+                offer.append("<picture>").append(escapeXml(fullUrl)).append("</picture>\n");
+                imageCount++;
+            }
+        }
+
+        // Название товара
+        offer.append("<name>").append(escapeXml(product.getName())).append("</name>\n");
+
+        // Описание в CDATA
+        if (product.getDescription() != null && !product.getDescription().isEmpty()) {
+            offer.append("<description><![CDATA[");
+            offer.append(product.getDescription().replace("]]>", "]]&gt;"));
+            offer.append("]]></description>\n");
+        }
+
+        // Доставка
+        offer.append("<delivery>true</delivery>\n");
+        offer.append("<pickup>false</pickup>\n");
+
+        // Заметки о продаже
+        offer.append("<sales_notes>Доставка по Казани в день заказа при оформлении до 14:00.</sales_notes>\n");
+
+        // Вес (переводим граммы в кг для спецификации)
+        if (product.getWeight() != null) {
+            double weightKg = product.getWeight() / 1000.0;
+            offer.append("<weight>").append(weightKg).append("</weight>\n");
+        }
+
+        offer.append("</offer>\n");
+
+        return offer.toString();
     }
 
     /**
