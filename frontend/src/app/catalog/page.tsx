@@ -6,7 +6,7 @@
 
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ProductCard from "@/components/product/ProductCard";
@@ -29,6 +29,8 @@ function getPageRange(current: number, total: number): number[] {
   return pages;
 }
 
+const PAGE_SIZE = 12;
+
 function CatalogContent() {
   const params = useSearchParams();
   const categoryId = params.get("category") ? Number(params.get("category")) : null;
@@ -36,27 +38,95 @@ function CatalogContent() {
   const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [totalPages, setTotalPages] = useState(0);
+  const [loadedPages, setLoadedPages] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const hasMore = loadedPages < totalPages - 1;
 
   useEffect(() => {
     categoriesApi.getAll().then(setCategories).catch(() => {});
   }, []);
 
+  // Reset and load first page when category changes
   useEffect(() => {
     setLoading(true);
+    setPage(0);
+    setLoadedPages(0);
     const fetcher = categoryId
-      ? () => productsApi.getByCategory(categoryId, page, 12)
-      : () => productsApi.getAll(page, 12);
+      ? () => productsApi.getByCategory(categoryId, 0, PAGE_SIZE)
+      : () => productsApi.getAll(0, PAGE_SIZE);
 
     fetcher()
       .then((data) => {
         setProducts(data?.content || []);
         setTotalPages(data?.totalPages || 0);
+        setLoadedPages(1);
       })
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
-  }, [categoryId, page]);
+  }, [categoryId]);
+
+  // Load more products (append) for infinite scroll
+  const loadMore = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = loadedPages;
+
+    const fetcher = categoryId
+      ? () => productsApi.getByCategory(categoryId!, nextPage, PAGE_SIZE)
+      : () => productsApi.getAll(nextPage, PAGE_SIZE);
+
+    fetcher()
+      .then((data) => {
+        setProducts((prev) => [...prev, ...(data?.content || [])]);
+        setTotalPages(data?.totalPages || 0);
+        setLoadedPages((p) => p + 1);
+        setPage(nextPage);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMore(false));
+  }, [loadingMore, hasMore, loadedPages, categoryId]);
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          loadMore();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loading, loadMore]);
+
+  // Pagination click: load up to selected page (replace mode)
+  const handlePageClick = useCallback((targetPage: number) => {
+    setLoading(true);
+    const fetcher = categoryId
+      ? () => productsApi.getByCategory(categoryId, targetPage, PAGE_SIZE)
+      : () => productsApi.getAll(targetPage, PAGE_SIZE);
+
+    fetcher()
+      .then((data) => {
+        setProducts(data?.content || []);
+        setTotalPages(data?.totalPages || 0);
+        setPage(targetPage);
+        setLoadedPages(targetPage + 1);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [categoryId]);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -94,7 +164,7 @@ function CatalogContent() {
 
         {/* Products grid */}
         <div className="flex-1">
-          {loading ? (
+          {loading && products.length === 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="aspect-square bg-gray-100 rounded-xl animate-pulse" />
@@ -113,11 +183,23 @@ function CatalogContent() {
                 ))}
               </div>
 
+              {/* Infinite scroll sentinel + loading indicator */}
+              {hasMore && (
+                <div ref={sentinelRef} className="flex justify-center py-8">
+                  {loadingMore && (
+                    <div className="flex items-center gap-2 text-gray-400 text-sm">
+                      <div className="w-5 h-5 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
+                      Загрузка...
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-1 mt-8">
+                <div className="flex justify-center items-center gap-1 mt-4">
                   <button
-                    onClick={() => setPage(Math.max(0, page - 1))}
+                    onClick={() => handlePageClick(Math.max(0, page - 1))}
                     disabled={page === 0}
                     className="min-w-[36px] h-9 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:border-primary-300 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
@@ -129,7 +211,7 @@ function CatalogContent() {
                     ) : (
                       <button
                         key={p}
-                        onClick={() => setPage(p)}
+                        onClick={() => handlePageClick(p)}
                         className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${page === p ? "bg-primary-500 text-white" : "border border-gray-200 text-gray-600 hover:border-primary-300"}`}
                       >
                         {p + 1}
@@ -137,7 +219,7 @@ function CatalogContent() {
                     )
                   )}
                   <button
-                    onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                    onClick={() => handlePageClick(Math.min(totalPages - 1, page + 1))}
                     disabled={page === totalPages - 1}
                     className="min-w-[36px] h-9 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:border-primary-300 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
