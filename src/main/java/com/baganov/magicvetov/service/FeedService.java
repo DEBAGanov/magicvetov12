@@ -83,7 +83,7 @@ public class FeedService {
 
         yml.append("<shop>\n");
         yml.append("<name>").append(escapeXml(shopName)).append("</name>\n");
-        yml.append("<url>").append(escapeXml(productFeedUrl)).append("</url>\n");
+        yml.append("<url>").append(escapeXml(siteUrl)).append("</url>\n");
         yml.append("<company>").append(escapeXml(shopCompany)).append("</company>\n");
 
         yml.append("<categories>\n");
@@ -389,7 +389,15 @@ public class FeedService {
 
         offer.append("<offer id=\"").append(product.getId()).append("\">\n");
         offer.append("<name>").append(escapeXml(product.getName())).append("</name>\n");
-        offer.append("<url>").append(escapeXml(productFeedUrl)).append("</url>\n");
+
+        // URL на страницу товара на сайте
+        String productUrl = siteUrl;
+        if (product.getCategory() != null) {
+            productUrl += "/catalog/" + product.getCategory().getId() + "/" + product.getId();
+        } else {
+            productUrl += "/catalog/" + product.getId();
+        }
+        offer.append("<url>").append(escapeXml(productUrl)).append("</url>\n");
         offer.append("<price>").append(price.intValue()).append("</price>\n");
 
         if (oldPrice != null) {
