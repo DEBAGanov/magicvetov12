@@ -4,7 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MagicCvetov is a pizza delivery platform built with Spring Boot 3.4.5 and Java 21. It provides REST APIs for order management, payment processing, delivery tracking, and Telegram bot integration.
+MagicCvetov ("Магия Цветов") is a **flower delivery** e-commerce platform serving Зеленодольск, Волжск and Казань. It is a monorepo with two deployables:
+
+- **Backend** — Spring Boot 3.4.5 / Java 21 REST API (`src/`) for order management, payments, delivery tracking, product feeds and Telegram bot integration.
+- **Frontend** — Next.js 15 / React 19 SEO-focused storefront (`frontend/`).
+
+> Note: some bot names and identifiers in code/docs still say "pizza"/"DIMBO" — these are legacy artifacts from a template; the live product is a flower shop. Catalog routes use flower terms (`rozy`, `tyulpany`, `cvety-v-korobke`, etc.).
 
 ## Build Commands
 
@@ -68,8 +73,41 @@ com.baganov.magicvetov
 3. Telegram bot authentication
 
 ### Database
-- PostgreSQL with Flyway migrations (24 migrations in `src/main/resources/db/migration/`)
+- PostgreSQL with Flyway migrations (`src/main/resources/db/migration/`, `V*__*.sql`)
 - Redis for caching (dev) / Simple cache (prod)
+
+## Frontend (`frontend/`)
+
+Next.js 15 (App Router) + React 19 + TypeScript + Tailwind CSS v4. State via **Zustand**, validation via **Zod**. No test runner configured.
+
+```bash
+cd frontend
+npm install
+npm run dev      # dev server (localhost:3000)
+npm run build    # production build (output: "standalone")
+npm run start    # serve production build
+npm run lint     # next lint
+```
+
+### Frontend Architecture
+- **SEO-first, route-per-keyword design.** Each landing page is its own App Router segment (`src/app/<slug>/page.tsx`): occasions (`na-den-rozhdeniya`, `na-8-marta`), recipients (`mame`, `zhene`), flower types (`rozy`, `tyulpany`), price bands (`do-2500`, `ot-3500-do-5000`), city pages (`dostavka-cvetov/<city>`). Adding a new SEO landing = add a route segment **and** register it in `src/app/sitemap.ts`.
+- `src/app/sitemap.ts` / `robots.ts` — dynamically generated sitemap & robots; blog URLs pulled from `src/lib/seo/blog-articles.ts`.
+- `src/lib/api/client.ts` — single fetch wrapper. Talks to backend at `/api/v1` (proxied). Server-side requests use `INTERNAL_API_URL`; carts tracked via `CART_SESSION_ID` cookie, auth via `mc_token` in localStorage (Bearer).
+- `src/lib/store/` — Zustand stores (`cart-store.ts`, `auth-store.ts`).
+- `src/lib/seo/`, `src/components/seo/` — shared SEO metadata constants and JSON-LD helpers.
+- `src/components/` — grouped by feature (`auth/`, `cart/`, `checkout/`, `home/`, `layout/`, `product/`, `ui/`).
+- Product images load from `s3.twcstorage.ru` (Timeweb S3) — whitelisted in `next.config.ts` `images.remotePatterns`.
+- Env: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `INTERNAL_API_URL`. Catalog supports infinite scroll (IntersectionObserver on a sentinel, paginated API fetches).
+
+## Product Feeds (SEO / marketplaces)
+
+`FeedController` (`/feed`) → `FeedService` generates XML/YML product feeds from the live catalog:
+- `/feed/yandex_business.yml` — Yandex Market YML
+- `/feed/yandex_webmaster.yml` — Yandex Webmaster YML
+- `/feed/avito.xml` — Avito XML
+- `/feed` (or `/feed/`) — default YML
+
+Feed URLs/shop name come from `app.base-url` and `app.shop-name` config.
 
 ## Environment Profiles
 

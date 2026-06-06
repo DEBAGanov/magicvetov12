@@ -8,6 +8,12 @@ import { BLOG_ARTICLES } from "@/lib/seo/blog-articles";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://magiacvetov12.ru";
 
+// Render at request time, NOT at build time. During `next build` (Docker builder
+// stage) the backend (app:8080) is unreachable, so a statically-generated sitemap
+// would silently drop all product/category URLs. Forcing dynamic rendering makes the
+// sitemap query the live API on each request, when the backend IS reachable.
+export const dynamic = "force-dynamic";
+
 // Static pages with realistic lastModified dates
 const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: SITE_URL, lastModified: "2026-04-25", changeFrequency: "daily", priority: 1.0 },
@@ -95,16 +101,14 @@ const BLOG_PAGES: MetadataRoute.Sitemap = BLOG_ARTICLES.map((a) => ({
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries = [...STATIC_PAGES, ...BLOG_PAGES];
 
+  const apiBase = process.env.INTERNAL_API_URL
+    ? `${process.env.INTERNAL_API_URL}/api/v1`
+    : `${SITE_URL}/api/v1`;
+
+  // Categories
   try {
-    const apiBase = process.env.INTERNAL_API_URL
-      ? `${process.env.INTERNAL_API_URL}/api/v1`
-      : `${SITE_URL}/api/v1`;
-
-    const [categories, products] = await Promise.all([
-      fetch(`${apiBase}/categories`).then((r) => r.json() as Promise<{ id: number }[]>).catch(() => []),
-      fetch(`${apiBase}/products?page=0&size=500`).then((r) => r.json() as Promise<{ content: { id: number; categoryId: number }[] }>).then((d) => d.content || []).catch(() => []),
-    ]);
-
+    const categories = await fetch(`${apiBase}/categories`, { cache: "no-store" })
+      .then((r) => r.json() as Promise<{ id: number }[]>);
     for (const cat of categories) {
       entries.push({
         url: `${SITE_URL}/catalog?category=${cat.id}`,
@@ -113,17 +117,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
       });
     }
+  } catch (e) {
+    console.error("[sitemap] failed to fetch categories:", e);
+  }
 
-    for (const p of products) {
-      entries.push({
-        url: `${SITE_URL}/catalog/${p.categoryId}/${p.id}`,
-        lastModified: "2026-04-25",
-        changeFrequency: "weekly",
-        priority: 0.7,
-      });
-    }
-  } catch {
-    // sitemap will contain only static pages if API is unavailable
+  // Products — paginate through ALL pages so the sitemap is never capped.
+  try {
+    const PAGE_SIZE = 200;
+    let page = 0;
+    let totalPages = 1;
+    do {
+      const data = await fetch(`${apiBase}/products?page=${page}&size=${PAGE_SIZE}`, { cache: "no-store" })
+        .then((r) => r.json() as Promise<{ content: { id: number; categoryId: number }[]; totalPages: number }>);
+      totalPages = data.totalPages ?? 1;
+      for (const p of data.content || []) {
+        if (p.categoryId == null || p.id == null) continue;
+        entries.push({
+          url: `${SITE_URL}/catalog/${p.categoryId}/${p.id}`,
+          lastModified: "2026-04-25",
+          changeFrequency: "weekly",
+          priority: 0.7,
+        });
+      }
+      page += 1;
+    } while (page < totalPages);
+  } catch (e) {
+    console.error("[sitemap] failed to fetch products:", e);
   }
 
   return entries;
