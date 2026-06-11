@@ -28,12 +28,19 @@ import java.util.stream.Collectors;
 import com.baganov.magicvetov.event.NewOrderEvent;
 import com.baganov.magicvetov.service.DeliveryZoneService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+
+    /**
+     * Публичный адрес витрины — используется как return_url после оплаты в ЮKassa.
+     */
+    @Value("${app.site-url:https://magiacvetov12.ru}")
+    private String siteUrl;
 
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
@@ -263,7 +270,7 @@ public class OrderService {
             paymentRequest.setMethod(PaymentMethod.SBP); // По умолчанию банковская карта
             paymentRequest.setAmount(order.getTotalAmount()); // Устанавливаем сумму заказа
             paymentRequest.setDescription(description);
-            paymentRequest.setReturnUrl("https://dimbopizza.ru/orders/" + order.getId());
+            paymentRequest.setReturnUrl(siteUrl + "/orders/" + order.getId());
 
             PaymentResponse payment = yooKassaPaymentService.createPayment(paymentRequest);
 

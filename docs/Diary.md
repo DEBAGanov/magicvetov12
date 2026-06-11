@@ -1,5 +1,25 @@
 # MagicCvetov - Дневник наблюдений
 
+## 2026-06-11 - Исправление ЮKassa: 403 forbidden и неверный return_url
+
+### Проблемы
+- Платежи ЮKassa перестали работать: `POST /api/v3/payments` → `403 forbidden`, "Transaction forbidden. Contact the Support Service" (при верном секретном ключе, shopId 1309241).
+- В запросе на оплату `return_url` указывал на чужой домен `https://dimbopizza.ru/orders/{id}` вместо `https://magiacvetov12.ru`.
+
+### Наблюдения
+- Причина 403: запрос принудительно задавал способ оплаты — `payment_method: {type: "sbp"}` + `confirmation.enforce_payment_method: true`. Магазин не имеет права создавать платёж с фиксированным способом оплаты, поэтому ЮKassa возвращает `forbidden`. Это не проблема аутентификации (ключ верный), а отсутствие прав на операцию.
+- Причина неверного return_url: `OrderService.createPaymentUrl()` жёстко прописывал `https://dimbopizza.ru/orders/{id}`. Фронтенд (`checkout/page.tsx` → `/orders/{id}/payment-url`) не передаёт returnUrl, поэтому всегда использовалось это значение. Дублирующий устаревший fallback также был в `YooKassaPaymentService.buildYooKassaPaymentRequest()`.
+
+### Решения
+- `YooKassaPaymentService.buildYooKassaPaymentRequest()`: удалён блок `payment_method` и `confirmation.enforce_payment_method`. Теперь способ оплаты (СБП/карта) пользователь выбирает на странице ЮKassa — устраняет 403.
+- `OrderService`: добавлено поле `@Value("${app.site-url:https://magiacvetov12.ru}") siteUrl`; return_url теперь `siteUrl + "/orders/" + id`.
+- Устаревший fallback в `YooKassaPaymentService` переведён на `https://magiacvetov12.ru`.
+- Компиляция (`./gradlew compileJava`) прошла успешно.
+
+### Открытые вопросы
+- UX изменился: пользователь больше не попадает сразу на СБП, а выбирает способ оплаты на странице ЮKassa. Если нужен прежний UX «сразу СБП» — включить СБП в кабинете ЮKassa и запросить у поддержки право на создание платежа с фиксированным способом оплаты, затем вернуть `payment_method`/`enforce_payment_method`.
+- Устаревший дефолт `yookassa.return-url` в `application.properties:290` (`api.dimbopizza.ru`) не используется в коде, но желательно обновить.
+
 ## 2026-04-25 - Реализация Фазы 4 SEO: Категорийные и сезонные лендинги
 
 ### Решения

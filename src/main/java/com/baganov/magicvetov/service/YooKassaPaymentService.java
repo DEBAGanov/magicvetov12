@@ -426,26 +426,16 @@ public class YooKassaPaymentService {
                 : "Оплата заказа №" + payment.getOrder().getId() + " в MagicCvetov";
         paymentRequest.put("description", description);
 
-        // Метод оплаты
-        Map<String, Object> paymentMethod = new HashMap<>();
-        paymentMethod.put("type", payment.getMethod().getYookassaMethod());
+        // Способ оплаты НЕ задаём принудительно: магазин не имеет права создавать
+        // платёж с фиксированным payment_method.type / enforce_payment_method,
+        // из-за чего ЮKassa возвращала 403 forbidden ("Transaction forbidden").
+        // Пользователь выбирает способ оплаты (СБП/карта) на странице ЮKassa.
 
-        // Для СБП добавляем банк, если указан
-        if (payment.getMethod() == PaymentMethod.SBP && payment.getBankId() != null) {
-            paymentMethod.put("bank_id", payment.getBankId());
-        }
-        paymentRequest.put("payment_method", paymentMethod);
-
-        // Подтверждение - с принудительным использованием только СБП
+        // Подтверждение — редирект обратно на витрину
         Map<String, Object> confirmation = new HashMap<>();
         confirmation.put("type", "redirect");
         confirmation.put("return_url", request.getReturnUrl() != null ? request.getReturnUrl()
-                : "https://dimbopizza.ru/orders/" + payment.getOrder().getId());
-
-        // Ограничиваем способы оплаты только СБП
-        if (payment.getMethod() == PaymentMethod.SBP) {
-            confirmation.put("enforce_payment_method", true);
-        }
+                : "https://magiacvetov12.ru/orders/" + payment.getOrder().getId());
         paymentRequest.put("confirmation", confirmation);
 
         // Метаданные
