@@ -34,7 +34,7 @@ export default function Footer() {
           <div>
             <div className="text-lg font-bold text-primary-300 mb-2">Магия Цветов</div>
             <p className="text-gray-400 leading-relaxed mb-3">Доставка свежих цветов по Волжску и Зеленодольску.</p>
-            <address className="not-italic text-xs text-gray-500 space-y-0.5">
+            <address className="not-italic text-xs text-gray-400 space-y-0.5">
               <p>ул. Володарского, 5, Волжск</p>
               <a href="tel:+79648612370" className="block text-gray-300 hover:text-primary-300">+7 (964) 861-23-70</a>
               <p>Пн-Пт 7:30–20:00, Сб-Вс 8:00–20:00</p>
@@ -43,7 +43,7 @@ export default function Footer() {
 
           {/* Каталог */}
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Каталог</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Каталог</div>
             <div className="flex flex-col gap-1.5">
               <Link href="/catalog" className="text-gray-300 hover:text-primary-300">Все цветы</Link>
               <Link href="/rozy" className="text-gray-300 hover:text-primary-300">Розы</Link>
@@ -62,7 +62,7 @@ export default function Footer() {
 
           {/* Поводы 1 */}
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Поводы</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Поводы</div>
             <div className="flex flex-col gap-1.5">
               {OCCASION_LINKS.slice(0, 6).map((link) => (
                 <Link key={link.href} href={link.href} className="text-sm text-gray-300 hover:text-primary-300 transition-colors">
@@ -74,7 +74,7 @@ export default function Footer() {
 
           {/* Поводы 2 */}
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">&nbsp;</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">&nbsp;</div>
             <div className="flex flex-col gap-1.5">
               {OCCASION_LINKS.slice(6, 12).map((link) => (
                 <Link key={link.href} href={link.href} className="text-sm text-gray-300 hover:text-primary-300 transition-colors">
@@ -86,7 +86,7 @@ export default function Footer() {
 
           {/* Поводы 3 + Информация */}
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">&nbsp;</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">&nbsp;</div>
             <div className="flex flex-col gap-1.5 mb-4">
               {OCCASION_LINKS.slice(12).map((link) => (
                 <Link key={link.href} href={link.href} className="text-sm text-gray-300 hover:text-primary-300 transition-colors">
@@ -94,7 +94,7 @@ export default function Footer() {
                 </Link>
               ))}
             </div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Информация</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Информация</div>
             <div className="flex flex-col gap-1.5">
               <Link href="/o-nas" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">О нас</Link>
               <Link href="/otzyvy" className="text-sm text-gray-300 hover:text-primary-300 transition-colors">Отзывы</Link>
@@ -106,12 +106,12 @@ export default function Footer() {
 
           {/* Доставка + Кому + По цене */}
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Доставка</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Доставка</div>
             <div className="flex flex-col gap-1.5 mb-3">
               <Link href="/dostavka-cvetov/volzhsk" className="text-gray-300 hover:text-primary-300">Волжск</Link>
               <Link href="/dostavka-cvetov/zelenodolsk" className="text-gray-300 hover:text-primary-300">Зеленодольск</Link>
             </div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Кому</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Кому</div>
             <div className="flex flex-col gap-1.5 mb-3">
               <Link href="/zhene" className="text-gray-300 hover:text-primary-300">Жене</Link>
               <Link href="/devushke" className="text-gray-300 hover:text-primary-300">Девушке</Link>
@@ -119,7 +119,7 @@ export default function Footer() {
               <Link href="/muzhchine" className="text-gray-300 hover:text-primary-300">Мужчине</Link>
               <Link href="/kollegam" className="text-gray-300 hover:text-primary-300">Коллегам</Link>
             </div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Розы</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Розы</div>
             <div className="flex flex-col gap-1.5 mb-3">
               <Link href="/krasnye-rozy" className="text-gray-300 hover:text-primary-300">Красные</Link>
               <Link href="/belye-rozy" className="text-gray-300 hover:text-primary-300">Белые</Link>
@@ -127,7 +127,7 @@ export default function Footer() {
               <Link href="/51-roza" className="text-gray-300 hover:text-primary-300">51 роза</Link>
               <Link href="/101-roza" className="text-gray-300 hover:text-primary-300">101 роза</Link>
             </div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">По цене</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">По цене</div>
             <div className="flex flex-col gap-1.5">
               <Link href="/do-2500" className="text-gray-300 hover:text-primary-300">до 2 500 ₽</Link>
               <Link href="/ot-2500-do-3500" className="text-gray-300 hover:text-primary-300">2 500–3 500 ₽</Link>
@@ -137,7 +137,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-gray-500">
+        <div className="mt-10 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-gray-400">
           <span>&copy; 2026 Магия Цветов. Все права защищены.</span>
           <span>Доставка цветов по Волжску и Зеленодольску</span>
         </div>

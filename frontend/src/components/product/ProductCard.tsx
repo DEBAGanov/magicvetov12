@@ -8,13 +8,14 @@
 
 import { useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/lib/store/cart-store";
 import { useToast } from "@/components/ui/Toast";
 import { trackAddToCart } from "@/lib/analytics";
 import type { ProductDTO } from "@/lib/types";
 
-export default function ProductCard({ product }: { product: ProductDTO }) {
+export default function ProductCard({ product, priority = false }: { product: ProductDTO; priority?: boolean }) {
   const addItem = useCartStore((s) => s.addItem);
   const toast = useToast();
 
@@ -25,10 +26,14 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
   const hasMultiple = allImages.length > 1;
 
   const [imgIndex, setImgIndex] = useState(0);
+  // Additional images are only mounted (and thus downloaded) after the first
+  // hover — avoids pulling every carousel frame for every visible card.
+  const [activated, setActivated] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startSlider = useCallback(() => {
     if (!hasMultiple) return;
+    setActivated(true);
     timerRef.current = setInterval(() => {
       setImgIndex((i) => (i + 1) % allImages.length);
     }, 800);
@@ -55,17 +60,23 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
       >
         {allImages.length > 0 ? (
           <>
-            {/* Stacked images — only the active one is visible */}
-            {allImages.map((src, i) => (
-              <img
-                key={i}
-                src={src}
-                alt={i === imgIndex ? product.name : ""}
-                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
-                style={{ opacity: i === imgIndex ? 1 : 0 }}
-                loading="lazy"
-              />
-            ))}
+            {/* Stacked images — only the active one is visible.
+                Extra frames mount lazily on first hover. */}
+            {allImages.map((src, i) =>
+              i === 0 || activated ? (
+                <Image
+                  key={i}
+                  src={src}
+                  alt={i === imgIndex ? product.name : ""}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                  priority={i === 0 && priority}
+                  loading={i === 0 && priority ? "eager" : "lazy"}
+                  className="object-cover transition-opacity duration-300"
+                  style={{ opacity: i === imgIndex ? 1 : 0 }}
+                />
+              ) : null
+            )}
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">🌸</div>

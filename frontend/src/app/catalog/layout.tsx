@@ -9,6 +9,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Каталог цветов",
   description: "Каталог свежих цветов и букетов с доставкой. Розы, тюльпаны, пионы и авторские букеты на любой случай.",
+  alternates: {
+    canonical: "/catalog",
+  },
 };
 
 export default function CatalogLayout({ children }: { children: React.ReactNode }) {

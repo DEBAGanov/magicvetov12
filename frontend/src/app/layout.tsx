@@ -95,7 +95,7 @@ export default function RootLayout({
       <body className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
         <ToastProvider>
           <Header />
-          <div className="flex-1">{children}</div>
+          <main className="flex-1">{children}</main>
           <Footer />
           <MobileNav />
           <MaxBotPopup />

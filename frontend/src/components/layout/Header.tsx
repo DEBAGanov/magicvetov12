@@ -30,7 +30,7 @@ export default function Header() {
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+        <Link href="/" aria-label="Магия Цветов — на главную" className="flex items-center gap-2 shrink-0">
           <div className="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center">
             <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="currentColor">
               <path d="M12 2c-2 4-9 7-9 14a9 9 0 0018 0c0-7-7-10-9-14z" />
@@ -74,6 +74,7 @@ export default function Header() {
           {/* Cart */}
           <Link
             href="/cart"
+            aria-label="Корзина"
             className="relative flex items-center gap-1 px-3 py-2 bg-primary-500 text-white rounded-full text-sm font-medium hover:bg-primary-600 transition-colors"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">

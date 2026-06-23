@@ -31,6 +31,26 @@ function getPageRange(current: number, total: number): number[] {
 
 const PAGE_SIZE = 12;
 
+// Skeleton matches the real card footprint (square image + text block) so the
+// grid reserves its full height before data arrives — prevents the footer from
+// jumping (CLS) as the static fallback → skeleton → products transitions happen.
+function ProductGridSkeleton() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+        <div key={i} className="rounded-xl border border-gray-100 overflow-hidden">
+          <div className="aspect-square bg-gray-100 animate-pulse" />
+          <div className="p-3 space-y-2">
+            <div className="h-4 bg-gray-100 rounded animate-pulse" />
+            <div className="h-4 w-2/3 bg-gray-100 rounded animate-pulse" />
+            <div className="h-5 w-1/2 bg-gray-100 rounded animate-pulse mt-2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function CatalogContent() {
   const params = useSearchParams();
   const categoryId = params.get("category") ? Number(params.get("category")) : null;
@@ -165,11 +185,7 @@ function CatalogContent() {
         {/* Products grid */}
         <div className="flex-1">
           {loading && products.length === 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-square bg-gray-100 rounded-xl animate-pulse" />
-              ))}
-            </div>
+            <ProductGridSkeleton />
           ) : products.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <div className="text-5xl mb-4">🌸</div>
@@ -178,8 +194,8 @@ function CatalogContent() {
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {products.map((p) => (
-                  <ProductCard key={p.id} product={p} />
+                {products.map((p, i) => (
+                  <ProductCard key={p.id} product={p} priority={i < 4} />
                 ))}
               </div>
 
@@ -235,9 +251,34 @@ function CatalogContent() {
   );
 }
 
+// Mirrors CatalogContent's outer shell so the static prerender (shown while the
+// client component suspends on useSearchParams) has the same height as the
+// hydrated page — no layout shift on hydration.
+function CatalogFallback() {
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <div className="h-5 w-40 bg-gray-100 rounded animate-pulse mb-6" />
+      <div className="h-8 w-56 bg-gray-100 rounded animate-pulse mb-6" />
+      <div className="flex flex-col md:flex-row gap-6">
+        <aside className="md:w-56 shrink-0 hidden md:block">
+          <div className="h-4 w-24 bg-gray-100 rounded animate-pulse mb-3" />
+          <div className="space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        </aside>
+        <div className="flex-1">
+          <ProductGridSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CatalogPage() {
   return (
-    <Suspense fallback={<div className="container mx-auto px-4 py-16 text-center text-gray-400">Загрузка...</div>}>
+    <Suspense fallback={<CatalogFallback />}>
       <CatalogContent />
     </Suspense>
   );

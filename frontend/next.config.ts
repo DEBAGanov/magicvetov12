@@ -13,7 +13,13 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   trailingSlash: false,
   images: {
-    unoptimized: true,
+    // Server-side optimization: resize 1000×1000 originals down to the
+    // grid container size and serve modern formats with a srcset.
+    formats: ["image/avif", "image/webp"],
+    // Catalog cards render at ~165px (mobile 2-col) / ~320px DPR2 — keep small steps.
+    imageSizes: [128, 165, 256, 320, 384],
+    deviceSizes: [360, 414, 640, 750, 828, 1080, 1200],
+    minimumCacheTTL: 2678400, // 31 days — cache optimized variants on disk
     remotePatterns: [
       {
         protocol: "https",
