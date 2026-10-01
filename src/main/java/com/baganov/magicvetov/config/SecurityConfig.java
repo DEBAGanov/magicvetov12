@@ -1,6 +1,22 @@
 /**
  * @file: SecurityConfig.java
  * @description: Настройка безопасности приложения
+ *
+ * Закрытые дефекты (docs/ADMIN_PANEL_PLAN.md §1):
+ *   S1 — /api/v1/admin/** был в публичном whitelist. Теперь только ROLE_ADMIN.
+ *   S2 — /debug/** был публичен и отдавал количество пользователей и все роли.
+ *        Путь убран, DebugController удалён.
+ *   S3 — /api/v1/orders/** и /api/v1/cart/** были публичны целиком: любой мог
+ *        читать чужие заказы по перебору id. Теперь требуют аутентификации,
+ *        кроме создания заказа и гостевой корзины (см. PUBLIC_ENDPOINTS).
+ *   S5 — method security работала только в prod: в dev @PreAuthorize молча
+ *        не применялась, и админский API был открыт даже без whitelist.
+ *        @EnableMethodSecurity перенесена на внешний класс — действует везде.
+ *   S7 — frameOptions.disable() снимал защиту от кликджекинга. Теперь
+ *        SAMEORIGIN.
+ *   Плюс: убран режим app.security.disable-jwt-auth, отключавший
+ *   аутентификацию целиком одной переменной окружения.
+ *
  * @dependencies: Spring Security
  * @created: 2025-05-24
  */
@@ -37,6 +53,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // действует во всех профилях, включая dev (дефект S5)
 @Profile("!test")
 public class SecurityConfig {
 
@@ -45,9 +62,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${app.security.disable-jwt-auth:false}")
-    private boolean disableJwtAuth;
 
     @Value("${app.cors.allowed-origins:https://magiacvetov12.ru,https://www.magiacvetov12.ru,https://magicvetov12.ru,https://www.magicvetov12.ru,https://api.magicvetov.ru,https://api.magiacvetov12.ru,http://localhost:5173,http://localhost:3000,http://localhost:8080,https://api.dimbopizza.ru,https://dimbopizza.ru,https://max.ru,https://m.max.ru,https://web.max.ru,https://app.max.ru}")
     private String[] corsAllowedOrigins;
@@ -153,50 +167,81 @@ public class SecurityConfig {
             // MAX Mini App static resources
             "/max-miniapp/**",
             "/max-miniapp",
-            // В dev режиме разрешаем все
+            // Корзина гостя: привязана к cookie CART_SESSION_ID, а не к учётной
+            // записи, поэтому работает без токена — иначе нельзя собрать заказ
+            // до регистрации.
             "/api/v1/cart",
             "/api/v1/cart/**",
-            "/api/v1/orders",
-            "/api/v1/orders/**",
-            "/api/v1/admin/**",
-            "/debug/**",
             // YAML Feed для интеграции с внешними сервисами
             "/feed",
             "/feed/**"
     };
 
+    /**
+     * Публичные эндпоинты, где важен метод: открыт только он.
+     *
+     * Оформление заказа и получение ссылки на оплату нужны гостю без
+     * регистрации — на этом держится покупка «в один экран». А вот ЧТЕНИЕ
+     * заказов (GET /api/v1/orders и /api/v1/orders/{id}) публичным быть не
+     * должно: OrderService.findOrder при userId == null возвращает любой заказ
+     * по id, то есть перебором открывались имя, телефон и адрес любого
+     * покупателя (дефект S3).
+     *
+     * Оговорка: гость после оплаты не сможет открыть свой заказ по ссылке —
+     * для этого нужен одноразовый токен заказа. Отдельная задача, см.
+     * docs/ADMIN_PANEL_PLAN.md §7.
+     */
+    private static final String[] PUBLIC_POST_ENDPOINTS = {
+            "/api/v1/orders"
+    };
+
+    /** Ссылка на оплату: гость запрашивает её сразу после создания заказа. */
+    private static final String[] PUBLIC_GET_ENDPOINTS = {
+            "/api/v1/orders/*/payment-url"
+    };
+
+    /**
+     * Swagger: нужен разработчику, но в прод отдавать описание всего API незачем.
+     * Поэтому здесь путь открыт, а в application-prod.properties сам springdoc
+     * выключен (springdoc.api-docs.enabled=false) — открытый матчер без
+     * springdoc просто вернёт 404.
+     */
+    private static final String[] SWAGGER_ENDPOINTS = {
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         log.debug("Configuring security with public URLs: {}", Arrays.toString(AUTH_WHITELIST));
-        log.info("Режим без проверки JWT: {}", disableJwtAuth);
 
-        if (disableJwtAuth) {
-            return http
-                    .csrf(AbstractHttpConfigurer::disable)
-                    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                    .authorizeHttpRequests(auth -> auth
-                            .anyRequest().permitAll()) // Разрешаем все запросы в dev режиме
-                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .build();
-        } else {
-            return http
-                    .csrf(AbstractHttpConfigurer::disable)
-                    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                    .headers(headers -> headers
-                            .frameOptions(frameOptions -> frameOptions.disable())
-                    )
-                    .authorizeHttpRequests(auth -> auth
-                            .requestMatchers(AUTH_WHITELIST).permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/v1/pizzas/**").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/v1/orders").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").permitAll()
-                            .anyRequest().authenticated())
-                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .authenticationProvider(authenticationProvider())
-                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                    .build();
-        }
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .headers(headers -> headers
+                        // Было disable(): страницу можно было встроить в чужой
+                        // iframe и подловить клик администратора (дефект S7).
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                        // Preflight браузера: до него дело не доходит без CORS,
+                        // но без явного разрешения падают запросы с заголовками.
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Админка — строго под ролью (дефект S1). Раньше этот
+                        // путь лежал в AUTH_WHITELIST, то есть был открыт всем.
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean
@@ -232,20 +277,8 @@ public class SecurityConfig {
 
 }
 
-/**
- * Конфигурация для продакшн режима с включенной method security
- */
-@Configuration
-@EnableMethodSecurity
-@Profile("prod")
-class ProductionSecurityConfig {
-}
-
-/**
- * Конфигурация для dev режима с отключенной method security
- */
-@Configuration
-@Profile("dev")
-class DevelopmentSecurityConfig {
-    // Method security отключена для dev режима
-}
+// Классы ProductionSecurityConfig и DevelopmentSecurityConfig удалены:
+// первый включал method security только в prod, второй существовал лишь чтобы
+// её НЕ включать в dev. Из-за этого все @PreAuthorize("hasRole('ADMIN')") в dev
+// молча не работали (дефект S5). Теперь @EnableMethodSecurity стоит на
+// SecurityConfig и действует во всех профилях.

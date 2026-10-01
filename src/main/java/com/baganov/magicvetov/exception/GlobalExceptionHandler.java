@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -120,6 +121,57 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 System.currentTimeMillis());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Файл не прошёл проверку: формат, размер или сигнатура.
+     *
+     * 400, а не 500: виноват запрос, и сообщение можно показать админу прямо в
+     * форме загрузки.
+     */
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidImage(InvalidImageException ex) {
+        log.warn("Отклонён загружаемый файл: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Загруженный файл больше лимита multipart.
+     *
+     * Без этого обработчика Spring отдаёт 500, и админ видит «что-то пошло не
+     * так» вместо понятной причины. Лимит стоит в
+     * spring.servlet.multipart.max-file-size, поэтому отказ приходит ещё до
+     * ImageUploadService — то есть до вычитывания файла в память.
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        log.warn("Загружаемый файл превышает лимит: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Файл слишком большой. Максимальный размер — 5 МБ",
+                System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Хранилище недоступно.
+     *
+     * 503, а не 500: проблема на нашей стороне и, в отличие от ошибки запроса,
+     * повтор имеет смысл. Отдельный код помогает и в разборе инцидентов —
+     * видно, что отказ пришёл именно от S3, а не из бизнес-логики.
+     */
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorResponse> handleStorageException(StorageException ex) {
+        log.error("Сбой хранилища: {}", ex.getMessage(), ex);
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                "Хранилище файлов недоступно, попробуйте позже",
+                System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

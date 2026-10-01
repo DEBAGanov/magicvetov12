@@ -92,6 +92,21 @@ dependencies {
     // Spring Retry для механизма повторных попыток
     implementation 'org.springframework.retry:spring-retry'
 
+    // Обработка загружаемых изображений (ImageUploadService).
+    // thumbnailator — ресайз с сохранением пропорций и поворотом по EXIF:
+    // фото с телефона иначе уезжают на бок.
+    //
+    // Кодировщика WebP здесь намеренно нет. Все доступные реализации
+    // (com.github.gotson, org.sejda) — обёртки над нативной libwebp через JNI и
+    // не содержат бинарника под macOS ARM64: проверено, падают с
+    // UnsatisfiedLinkError на машине разработчика. Пригодного чисто-Java
+    // кодировщика на Maven Central нет (twelvemonkeys:imageio-webp умеет только
+    // чтение — в нём нет ImageWriterSpi).
+    // Поэтому пишем JPEG средствами встроенного ImageIO: основной выигрыш даёт
+    // ресайз 4000→1600 px, а витрине WebP/AVIF всё равно раздаёт Next.js через
+    // /_next/image. См. docs/Diary.md, запись от 2026-10-01.
+    implementation 'net.coobird:thumbnailator:0.4.20'
+
     // AWS SDK
     implementation platform('software.amazon.awssdk:bom:2.25.1')
     implementation 'software.amazon.awssdk:s3'
@@ -116,6 +131,51 @@ tasks.named('test') {
     useJUnitPlatform()
     // Пропускаем тесты при сборке, пока они не настроены правильно
     enabled = false
+}
+
+/**
+ * Проверка правил доступа (SecurityConfigRulesTest).
+ *
+ * Отдельная задача, потому что основной `test` выключен целиком, а эти правила
+ * ломаются незаметно: приложение стартует, витрина работает, а админский API
+ * открыт всем. Запуск: ./gradlew securityTest
+ */
+tasks.register('securityTest', Test) {
+    description = 'Проверяет правила доступа Spring Security (дефекты S1-S3)'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'com.baganov.magicvetov.config.SecurityConfigRulesTest'
+    }
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        showStandardStreams = false
+    }
+}
+
+/**
+ * Проверка приёма загружаемых изображений (ImageUploadServiceTest).
+ *
+ * Отдельная задача по той же причине, что и securityTest: основной `test`
+ * выключен, а регрессия здесь не видна снаружи — форма работает, файл
+ * «загрузился», просто в бакет уехал переименованный .exe.
+ * Запуск: ./gradlew uploadTest
+ */
+tasks.register('uploadTest', Test) {
+    description = 'Проверяет валидацию и обработку загружаемых изображений'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'com.baganov.magicvetov.service.ImageUploadServiceTest'
+    }
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        showStandardStreams = false
+    }
 }
 
 tasks.named('bootRun') {

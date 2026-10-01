@@ -86,8 +86,13 @@ spring:
 timeweb:
   s3:
     endpoint: https://s3.twcstorage.ru
-    access-key: ${TIMEWEB_S3_ACCESS_KEY:AJK63DSBOEBQD3IVTLOT}
-    secret-key: ${TIMEWEB_S3_SECRET_KEY:eOkZ8nzUkylhcsgPRQVJdr8qmvblxvaq7zoEcNpk}
+    # Ключи задаются ТОЛЬКО через переменные окружения — значений по умолчанию
+    # здесь быть не должно. Раньше рабочая пара ключей лежала прямо в этих
+    # строках: любой с доступом к репозиторию мог читать, писать и удалять
+    # файлы в бакете товаров. Ключи из истории git считаются
+    # скомпрометированными и подлежат перевыпуску (см. docs/ADMIN_PANEL_PLAN.md §5, п. 1.6).
+    access-key: ${TIMEWEB_S3_ACCESS_KEY:}
+    secret-key: ${TIMEWEB_S3_SECRET_KEY:}
     bucket: f9c8e17a-magicvetov-products
     public-url: https://s3.twcstorage.ru/f9c8e17a-magicvetov-products
 

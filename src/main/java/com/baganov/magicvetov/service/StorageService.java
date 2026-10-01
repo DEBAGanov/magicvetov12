@@ -1,6 +1,7 @@
 package com.baganov.magicvetov.service;
 
 import com.baganov.magicvetov.config.MinioClientConfig.UrlTransformer;
+import com.baganov.magicvetov.exception.StorageException;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.http.Method;
@@ -211,11 +212,43 @@ public class StorageService {
         }
     }
 
+    /**
+     * Восстановление после исчерпания попыток — для методов, возвращающих String
+     * (uploadFile).
+     *
+     * Раньше здесь был один метод с типом void, и он подходил под ВСЕ
+     * @Retryable-методы класса: после трёх неудачных попыток ошибка гасилась, а
+     * вызывающий код считал операцию успешной. Для загрузки это означало
+     * «файл загружен», хотя в бакете его не было, и битая ссылка уезжала в БД.
+     * Теперь ошибка пробрасывается (дефект 2.13 плана).
+     */
     @Recover
-    public void recover(Exception e) {
-        log.error("All retry attempts failed: {}", e.getMessage(), e);
-        if (e.getCause() != null) {
-            log.error("Root cause: {}", e.getCause().getMessage());
-        }
+    public String recoverUpload(Exception e, MultipartFile file, String prefix) {
+        log.error("Загрузка файла в S3 не удалась после всех попыток: {}", e.getMessage(), e);
+        throw new StorageException("Не удалось загрузить файл в хранилище", e);
+    }
+
+    /** Восстановление для загрузки потоком. */
+    @Recover
+    public void recoverUploadStream(Exception e, InputStream inputStream, String objectName,
+            String contentType, long size) {
+        log.error("Загрузка потока в S3 не удалась после всех попыток ({}): {}",
+                objectName, e.getMessage(), e);
+        throw new StorageException("Не удалось загрузить файл в хранилище", e);
+    }
+
+    /**
+     * Восстановление для удаления.
+     *
+     * Здесь ошибку тоже пробрасываем, но вызывающий код должен помнить: при
+     * удалении набора файлов исключение на одном не должно прерывать остальные
+     * и уж точно не должно откатывать запись в БД — файл в бакете можно
+     * дочистить ревизией сирот, а потерянную строку восстановить нечем.
+     */
+    @Recover
+    public void recoverDelete(Exception e, String objectName) {
+        log.error("Удаление файла из S3 не удалось после всех попыток ({}): {}",
+                objectName, e.getMessage(), e);
+        throw new StorageException("Не удалось удалить файл из хранилища: " + objectName, e);
     }
 }
