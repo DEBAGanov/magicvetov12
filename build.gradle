@@ -164,13 +164,15 @@ tasks.register('securityTest', Test) {
  * Запуск: ./gradlew uploadTest
  */
 tasks.register('uploadTest', Test) {
-    description = 'Проверяет валидацию и обработку загружаемых изображений'
+    description = 'Проверяет загрузку изображений, правку галереи и удаление файлов из S3'
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform()
     filter {
         includeTestsMatching 'com.baganov.magicvetov.service.ImageUploadServiceTest'
+        includeTestsMatching 'com.baganov.magicvetov.service.AdminProductServiceTest'
+        includeTestsMatching 'com.baganov.magicvetov.service.StorageServiceUrlTest'
     }
     testLogging {
         events 'passed', 'failed', 'skipped'

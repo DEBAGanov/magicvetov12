@@ -9,6 +9,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
@@ -24,9 +25,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * ЛЕГАСИ, ПО УМОЛЧАНИЮ ОТКЛЮЧЁН. Дефект 3.7 из docs/ADMIN_PANEL_PLAN.md.
+ *
+ * Хук времён пиццерии: на каждом старте приложения перезаписывал
+ * products.image_url и categories.image_url по жёстко прошитой таблице имён
+ * («Бургер Классический» → products/burger_classic.png). Сейчас имена товаров
+ * в базе цветочные и не совпадают, поэтому он фактически ничего не делает —
+ * но это живой @EventListener, мутирующий ровно те поля, которые админка даёт
+ * править. Один совпавший товар — и правка админа молча откатится при
+ * следующем перезапуске.
+ *
+ * Включается только явно: app.legacy.image-uploader.enabled=true.
+ * Когда станет окончательно ясно, что он не нужен — удалить вместе с
+ * ресурсами, на которые он ссылается.
+ */
 @Slf4j
 @Component
 @Profile("!test")
+@ConditionalOnProperty(name = "app.legacy.image-uploader.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class ImageUploader {
 

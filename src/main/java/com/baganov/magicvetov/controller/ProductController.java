@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,12 +20,17 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Создать новый продукт")
-    public ProductDto createProduct(@RequestPart("product") ProductDto productDto,
-            @RequestPart("image") MultipartFile image) {
-        return productService.createProduct(productDto, image);
-    }
+    // Создание товара убрано отсюда намеренно.
+    //
+    // Здесь висел POST /api/v1/products без @PreAuthorize и без валидации
+    // файла, а путь лежал в AUTH_WHITELIST — то есть товар и загрузку в наш
+    // S3-бакет мог сделать любой анонимный запрос. Это второй вход в ту же
+    // дыру, что дефект S1.
+    //
+    // Создание товаров живёт в админском API: POST /api/v1/admin/products
+    // (под ROLE_ADMIN), файлы — через POST /api/v1/admin/upload с проверкой
+    // формата, сигнатуры и размера. Дублировать это здесь незачем.
+    // См. docs/ADMIN_PANEL_PLAN.md §3.8.
 
     @GetMapping
     @Operation(summary = "Получить все продукты")

@@ -11,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,19 +22,15 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final S3Service s3Service;
 
-    private static final String PRODUCTS_FOLDER = "products";
-
-    @Transactional
-    public ProductDto createProduct(ProductDto productDto, MultipartFile image) {
-        String imageUrl = s3Service.uploadImage(image, PRODUCTS_FOLDER);
-        productDto.setImageUrl(imageUrl);
-
-        Product product = productMapper.toEntity(productDto);
-        Product savedProduct = productRepository.save(product);
-        return productMapper.toDto(savedProduct);
-    }
+    // createProduct убран вместе с POST /api/v1/products (см. ProductController).
+    //
+    // Заодно это выводит из использования S3Service (дефект 3.8 плана): в
+    // проекте было два хранилища параллельно — StorageService (MinIO SDK,
+    // ключ prefix/uuid.ext, возвращает objectName) и S3Service (AWS SDK,
+    // ключ folder/uuid_имя, возвращает полный URL). Из-за второго в БД
+    // попадали абсолютные URL, а админка работает с относительными ключами.
+    // Остаётся один StorageService.
 
     @Cacheable(value = "products", key = "'product:' + #id")
     public ProductDto getProductById(Integer id) {

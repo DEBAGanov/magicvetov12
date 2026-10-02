@@ -6,6 +6,7 @@
  */
 package com.baganov.magicvetov.model.dto.product;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -40,8 +42,27 @@ public class UpdateProductRequest {
     @Positive(message = "ID категории должен быть положительным")
     private Integer categoryId;
 
-    @Size(max = 500, message = "URL изображения не может превышать 500 символов")
-    private String imageUrl;
+    /**
+     * Ключ главной картинки (products/uuid.jpg), НЕ полный URL.
+     *
+     * Пустая строка означает «снять изображение»: раньше imageUrl применялся
+     * только при != null, и очистить картинку через API было невозможно
+     * (дефект 3.3 плана). Отличить «не передали поле» от «передали пустое»
+     * иначе нельзя, поэтому договорённость такая:
+     *   null — поле не меняем;
+     *   ""   — очищаем, файл удаляется из бакета;
+     *   ключ — ставим новую картинку.
+     */
+    @Size(max = 500, message = "Ключ изображения не может превышать 500 символов")
+    private String imageKey;
+
+    /**
+     * Галерея целиком, в нужном порядке. Пришедший список — это состояние
+     * «как должно быть»: чего в нём нет, то удаляется и из БД, и из бакета.
+     * null означает «галерею не трогать».
+     */
+    @Valid
+    private List<ProductImageDTO> additionalImages;
 
     @Positive(message = "Вес должен быть положительным")
     private Integer weight;
@@ -49,6 +70,8 @@ public class UpdateProductRequest {
     private Boolean isAvailable;
 
     private Boolean isSpecialOffer;
+
+    private Boolean isPreorder;
 
     @Min(value = 0, message = "Процент скидки не может быть отрицательным")
     @Max(value = 100, message = "Процент скидки не может превышать 100")

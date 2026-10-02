@@ -6,6 +6,7 @@
  */
 package com.baganov.magicvetov.model.dto.product;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -40,8 +42,13 @@ public class CreateProductRequest {
     @Positive(message = "ID категории должен быть положительным")
     private Integer categoryId;
 
-    @Size(max = 500, message = "URL изображения не может превышать 500 символов")
-    private String imageUrl;
+    /** Ключ главной картинки (products/uuid.jpg), полученный из POST /admin/upload. */
+    @Size(max = 500, message = "Ключ изображения не может превышать 500 символов")
+    private String imageKey;
+
+    /** Галерея в нужном порядке; главная картинка задаётся отдельно в imageKey. */
+    @Valid
+    private List<ProductImageDTO> additionalImages;
 
     @Positive(message = "Вес должен быть положительным")
     private Integer weight;
@@ -51,6 +58,9 @@ public class CreateProductRequest {
 
     @Builder.Default
     private Boolean isSpecialOffer = false;
+
+    @Builder.Default
+    private Boolean isPreorder = false;
 
     @Min(value = 0, message = "Процент скидки не может быть отрицательным")
     @Max(value = 100, message = "Процент скидки не может превышать 100")

@@ -189,6 +189,34 @@ public class StorageService {
     }
 
     /**
+     * Публичный URL для значения, пришедшего из БД.
+     *
+     * Единственное место, которое решает, нужно ли приклеивать префикс. После
+     * миграции V31 в базе лежат только относительные ключи, но проверка
+     * оставлена намеренно: внешние ссылки (поставщик, CDN) и строки, которые
+     * миграция не распознала, должны отдаваться как есть, а не превращаться в
+     * https://s3.../bucket/https://... (дефект 3.1 плана).
+     *
+     * @return готовый URL, либо null если ссылки нет
+     */
+    public String resolvePublicUrl(String storedValue) {
+        if (storedValue == null || storedValue.isBlank()) {
+            return null;
+        }
+        if (storedValue.startsWith("http://") || storedValue.startsWith("https://")) {
+            return storedValue;
+        }
+        try {
+            return getPublicUrl(storedValue);
+        } catch (Exception e) {
+            // Не роняем выдачу каталога из-за одной ссылки: лучше показать
+            // сырое значение, чем отдать 500 на всю страницу.
+            log.error("Не удалось собрать публичный URL для {}: {}", storedValue, e.getMessage());
+            return storedValue;
+        }
+    }
+
+    /**
      * Удаление файла
      */
     @Retryable(value = { Exception.class }, maxAttempts = 3, backoff = @Backoff(delay = 2000))

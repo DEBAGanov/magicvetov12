@@ -131,15 +131,8 @@ public class SecurityConfig {
             // ЮKassa СБП API endpoints (для мобильного приложения)
             "/api/v1/payments/yookassa/sbp/banks",
             "/api/v1/payments/yookassa/sbp/**",
-            // Categories (только GET)
-            "/api/v1/categories",
-            "/api/v1/categories/*",
-            // Products (только GET)
-            "/api/v1/products",
-            "/api/v1/products/*",
-            "/api/v1/products/category/*",
-            "/api/v1/products/special-offers",
-            "/api/v1/products/search",
+            // Каталог вынесен в PUBLIC_GET_ENDPOINTS: комментарий «только GET»
+            // здесь не соответствовал действительности, см. ниже.
             // Delivery API (новые эндпоинты для мобильного приложения)
             "/api/delivery/**",
             "/api/v1/delivery/**",
@@ -195,9 +188,26 @@ public class SecurityConfig {
             "/api/v1/orders"
     };
 
-    /** Ссылка на оплату: гость запрашивает её сразу после создания заказа. */
+    /**
+     * Публичное ЧТЕНИЕ: каталог витрины и ссылка на оплату.
+     *
+     * Каталог раньше лежал в AUTH_WHITELIST с комментарием «только GET», но
+     * requestMatchers(AUTH_WHITELIST) метод не учитывает — путь был открыт для
+     * всех методов. А на /api/v1/products висит POST (ProductController.
+     * createProduct) без @PreAuthorize и без валидации: он создавал товар и
+     * заливал файл через S3Service. То есть любой анонимный запрос мог писать
+     * в наш бакет и в каталог — та же дыра, что S1, только с другого входа.
+     * Теперь перечисленное открыто строго на GET.
+     */
     private static final String[] PUBLIC_GET_ENDPOINTS = {
-            "/api/v1/orders/*/payment-url"
+            "/api/v1/orders/*/payment-url",
+            "/api/v1/categories",
+            "/api/v1/categories/*",
+            "/api/v1/products",
+            "/api/v1/products/*",
+            "/api/v1/products/category/*",
+            "/api/v1/products/special-offers",
+            "/api/v1/products/search"
     };
 
     /**
