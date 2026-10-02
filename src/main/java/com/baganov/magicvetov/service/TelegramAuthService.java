@@ -473,14 +473,7 @@ public class TelegramAuthService {
         log.debug("Создание AuthResponse для пользователя: id={}, username={}, email={}, firstName={}, lastName={}",
                 user.getId(), user.getUsername(), user.getEmail(), user.getFirstName(), user.getLastName());
 
-        AuthResponse response = AuthResponse.builder()
-                .token(jwtToken)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
+        AuthResponse response = AuthResponse.of(user, jwtToken);
 
         log.debug("AuthResponse создан успешно");
         return response;

@@ -64,6 +64,13 @@ public class SmsAuthMapper {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                // Вход по SMS — покупательский сценарий, и SmsAuthService.UserInfo
+                // роли не переносит. Отдаём ROLE_USER, а не пустой список: пустой
+                // фронт мог бы истолковать как «роли не пришли» и показать меню
+                // админки. Если когда-нибудь понадобится вход админа по SMS,
+                // роли надо будет протащить через UserInfo — admin-меню здесь
+                // не появится само.
+                .roles(java.util.List.of("ROLE_USER"))
                 .build();
     }
 }

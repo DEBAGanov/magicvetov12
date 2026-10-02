@@ -14,7 +14,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/account/", "/checkout", "/cart", "/search"],
+        // /admin/ закрыт и здесь, и через metadata.robots в admin/layout.tsx:
+        // robots.txt только просит не обходить, а noindex в разметке убирает
+        // страницу из индекса, если на неё всё же пришли по ссылке.
+        disallow: ["/account/", "/checkout", "/cart", "/search", "/admin/"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

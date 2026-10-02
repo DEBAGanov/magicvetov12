@@ -87,14 +87,7 @@ public class MaxWebAppService {
         log.info("Пользователь MAX успешно авторизован: userId={}, maxId={}",
                 user.getId(), maxUser.getId());
 
-        return AuthResponse.builder()
-                .token(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
+        return AuthResponse.of(user, token);
     }
 
     /**
@@ -553,13 +546,6 @@ public class MaxWebAppService {
 
         log.info("📱 ✅ JWT токен сгенерирован для пользователя: userId={}", user.getId());
 
-        return AuthResponse.builder()
-                .token(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
+        return AuthResponse.of(user, token);
     }
 }

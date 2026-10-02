@@ -74,14 +74,7 @@ public class TelegramWebAppService {
 
         log.info("Пользователь {} успешно авторизован через Telegram WebApp", user.getId());
 
-        return AuthResponse.builder()
-                .token(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
+        return AuthResponse.of(user, token);
     }
 
     /**
@@ -140,14 +133,7 @@ public class TelegramWebAppService {
 
         log.info("Пользователь {} успешно авторизован через расширенную Telegram WebApp авторизацию", user.getId());
 
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
+        return AuthResponse.of(user, jwtToken);
     }
 
     /**

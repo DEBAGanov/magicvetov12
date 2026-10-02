@@ -39,14 +39,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(user);
 
-        return AuthResponse.builder()
-                .token(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
+        return AuthResponse.of(user, token);
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -59,14 +52,7 @@ public class AuthService {
             User user = (User) authentication.getPrincipal();
             String token = jwtService.generateToken(user);
 
-            return AuthResponse.builder()
-                    .token(token)
-                    .userId(user.getId())
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .firstName(user.getFirstName())
-                    .lastName(user.getLastName())
-                    .build();
+            return AuthResponse.of(user, token);
         } catch (AuthenticationException e) {
             log.error("Authentication failed: {}", e.getMessage());
             throw new BadCredentialsException("Неверное имя пользователя или пароль");
