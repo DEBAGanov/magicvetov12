@@ -31,25 +31,32 @@
       `app.security.disable-jwt-auth`
 
 ### Этап 2 — Бэкенд: картинки и карточка
-- [ ] 2.1 `V31`: нормализовать `image_url` к относительным ключам,
-      `products.image_url` → `VARCHAR(500)`, индекс `product_images`
-- [ ] 2.2 `ImageUploadService` — белый список без SVG, лимит, проверка сигнатуры
-- [ ] 2.2a Ресайз до 1600 px + WebP
-- [ ] 2.3 `POST /admin/upload` → `objectName` + постоянный публичный URL
-- [ ] 2.4 `DELETE /admin/upload?objectName=`
-- [ ] 2.5 `GET /admin/products` — пагинация, поиск, фильтр
-- [ ] 2.6 `additionalImages` и `isPreorder` в админских DTO
-- [ ] 2.7 Починить двойной префикс URL в `mapToDTO`
-- [ ] 2.8 `updateProduct`: галерея с порядком, удаление исчезнувших из S3 после коммита
-- [ ] 2.9 `deleteProduct`: удалить все файлы товара из S3
-- [ ] 2.10 `@CacheEvict` на всех записях
-- [ ] 2.11 Отключить легаси `util/ImageUploader`
-- [ ] 2.12 Вывести `S3Service` из использования
-- [ ] 2.13 `@Recover` — пробрасывать ошибку
+- [x] 2.1 `V31`: ссылки → относительные ключи, `VARCHAR(500)`, индекс
+      ⚠️ на живом Postgres не проверена (Docker не запущен) — прогнать на копии
+- [x] 2.2 `ImageUploadService` — белый список без SVG, лимит, проверка сигнатуры
+- [x] 2.2a Ресайз до 1600 px. **WebP отменён** — кодировщика под macOS ARM64
+      нет ни в одной библиотеке (проверены 3), пишем JPEG q0.85
+- [x] 2.3 `POST /admin/upload` → `objectName` + постоянный публичный URL
+- [x] 2.4 `DELETE /admin/upload?objectName=`
+- [x] 2.5 `GET /admin/products` — пагинация, поиск, фильтр, вкл. недоступные
+- [x] 2.6 `additionalImages` и `isPreorder` в админских DTO
+- [x] 2.7 Починен двойной префикс URL (`StorageService.resolvePublicUrl`)
+- [x] 2.8 `updateProduct`: галерея с порядком, удаление исчезнувших после коммита
+- [x] 2.9 `deleteProduct`: удаляет все файлы товара из S3
+- [x] 2.10 `@CacheEvict` на всех записях
+- [x] 2.11 Легаси `util/ImageUploader` отключён за флагом
+- [x] 2.12 `S3Service` выведен из использования
+- [x] 2.13 `@Recover` пробрасывает ошибку вместо проглатывания
+- [x] 2.17 🔴 **Закрыт `POST /api/v1/products`** — висел без `@PreAuthorize` в
+      `AUTH_WHITELIST`, любой анонимный запрос мог создать товар и залить файл
+      в бакет. Найдено по ходу этапа 2, та же дыра, что S1
 - [ ] 2.14 CRUD категорий
-- [ ] 2.15 `roles` в `AuthResponse`
+- [ ] 2.15 `roles` в `AuthResponse` (без него фронт не отличит админа)
 - [ ] 2.16 Ревизия сирот в бакете (`@Scheduled`, порог 24 ч)
 - [ ] 2.0 Проверить политику бакета в `MinioClientConfig` (`Principal: "*"`)
+
+**Тесты этапа 2:** `./gradlew uploadTest` — 28 проверок (загрузка, галерея,
+удаление из S3, сборка URL). Вместе с `securityTest` — 37, все проходят.
 
 ### Этап 3 — Фронтенд админки
 - [ ] 3.1 `lib/admin/api.ts` | 3.2 `/admin/login` | 3.3 `AdminShell`
