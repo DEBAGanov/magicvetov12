@@ -15,7 +15,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AdminApiError, deleteUnsavedImage, uploadImage } from '@/lib/admin/api'
 import { cn } from '@/lib/utils'
 import { Button, PlusIcon, TrashIcon } from './ui'
@@ -31,15 +31,23 @@ export function SingleImageField({
   value,
   onChange,
   disabled,
+  onBusyChange,
 }: {
   value: SingleImage | null
   onChange: (value: SingleImage | null) => void
   disabled?: boolean
+  /** Сообщает форме, что идёт загрузка — сохранять в это время нельзя. */
+  onBusyChange?: (busy: boolean) => void
 }) {
   const [percent, setPercent] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // percent !== null означает, что загрузка идёт.
+  useEffect(() => {
+    onBusyChange?.(percent !== null)
+  }, [percent, onBusyChange])
 
   async function upload(file: File) {
     setError(null)

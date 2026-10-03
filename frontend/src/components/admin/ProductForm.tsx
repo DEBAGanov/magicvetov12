@@ -89,6 +89,14 @@ export function ProductForm({ product }: { product?: AdminProductDTO }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  /**
+   * Идёт загрузка фотографий.
+   *
+   * Пока она идёт, сохранять нельзя: товар сохранился бы с пустым imageKey,
+   * а файл остался бы в бакете ничьим. Так и случилось на телефоне — там
+   * загрузка занимает заметные секунды, и «Создать товар» нажимается раньше.
+   */
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const summaryRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -151,6 +159,13 @@ export function ProductForm({ product }: { product?: AdminProductDTO }) {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     setSaveError(null)
+
+    // Кнопка в это время отключена, но форму можно отправить и клавишей Enter
+    // из текстового поля — поэтому проверяем и здесь.
+    if (uploadingPhotos) {
+      setSaveError('Фотографии ещё загружаются. Подождите пару секунд')
+      return
+    }
 
     const found = validate()
     if (Object.keys(found).length > 0) {
@@ -351,14 +366,30 @@ export function ProductForm({ product }: { product?: AdminProductDTO }) {
 
       <section className="mt-5 rounded-xl border border-gray-200 bg-white p-4 sm:p-5">
         <h2 className="mb-3 text-base font-semibold text-gray-900">Фотографии</h2>
-        <ImageGallery items={images} onChange={setImages} disabled={saving} />
+        <ImageGallery
+          items={images}
+          onChange={setImages}
+          disabled={saving}
+          onBusyChange={setUploadingPhotos}
+        />
       </section>
 
       {/* Кнопки прилипают к низу: на длинной форме с телефона иначе надо
           каждый раз докручивать до конца, чтобы сохранить. */}
       <div className="sticky bottom-16 z-10 mt-5 flex gap-2 rounded-xl border border-gray-200 bg-white/95 p-3 backdrop-blur sm:bottom-0">
-        <Button type="submit" variant="primary" disabled={saving} className="flex-1 sm:flex-none">
-          {saving ? 'Сохраняем…' : isEdit ? 'Сохранить' : 'Создать товар'}
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={saving || uploadingPhotos}
+          className="flex-1 sm:flex-none"
+        >
+          {saving
+            ? 'Сохраняем…'
+            : uploadingPhotos
+              ? 'Ждём загрузку фото…'
+              : isEdit
+                ? 'Сохранить'
+                : 'Создать товар'}
         </Button>
         <Button
           type="button"

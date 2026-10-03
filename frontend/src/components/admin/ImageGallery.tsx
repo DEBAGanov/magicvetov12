@@ -24,7 +24,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdminApiError, deleteUnsavedImage, uploadImage } from '@/lib/admin/api'
 import { cn } from '@/lib/utils'
 import { ArrowDownIcon, ArrowUpIcon, Button, PlusIcon, StarIcon, TrashIcon } from './ui'
@@ -55,10 +55,19 @@ export function ImageGallery({
   items,
   onChange,
   disabled,
+  onBusyChange,
 }: {
   items: GalleryItem[]
   onChange: (items: GalleryItem[]) => void
   disabled?: boolean
+  /**
+   * Сообщает форме, что идёт загрузка.
+   *
+   * Без этого можно было нажать «Сохранить», пока фото ещё грузится: товар
+   * сохранялся с пустым imageKey, а загруженный файл оставался в бакете
+   * ничьим. На телефоне, где загрузка идёт заметные секунды, так и вышло.
+   */
+  onBusyChange?: (busy: boolean) => void
 }) {
   const [uploading, setUploading] = useState<UploadingFile[]>([])
   const [dragOver, setDragOver] = useState(false)
@@ -69,6 +78,13 @@ export function ImageGallery({
   // полагаться на значение из замыкания нельзя.
   const itemsRef = useRef(items)
   itemsRef.current = items
+
+  // «Занято», пока есть файлы без ошибки — то есть ещё загружающиеся.
+  // Файл с ошибкой остаётся в списке как сообщение и сохранять не мешает.
+  const busy = uploading.some((u) => !u.error)
+  useEffect(() => {
+    onBusyChange?.(busy)
+  }, [busy, onBusyChange])
 
   const upload = useCallback(
     async (files: File[]) => {

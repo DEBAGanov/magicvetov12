@@ -277,10 +277,17 @@ function CategoryForm({
   const [nameError, setNameError] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  /** Идёт загрузка картинки — сохранять нельзя, иначе ключ не попадёт в запрос. */
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     setSaveError(null)
+
+    if (uploadingImage) {
+      setSaveError('Картинка ещё загружается. Подождите пару секунд')
+      return
+    }
 
     if (!name.trim()) {
       setNameError('Укажите название категории')
@@ -352,7 +359,12 @@ function CategoryForm({
       </Field>
 
       <Field label="Картинка">
-        <SingleImageField value={image} onChange={setImage} disabled={saving} />
+        <SingleImageField
+          value={image}
+          onChange={setImage}
+          disabled={saving}
+          onBusyChange={setUploadingImage}
+        />
       </Field>
 
       <label
@@ -375,8 +387,14 @@ function CategoryForm({
       </label>
 
       <div className="flex gap-2">
-        <Button type="submit" variant="primary" disabled={saving}>
-          {saving ? 'Сохраняем…' : isEdit ? 'Сохранить' : 'Создать'}
+        <Button type="submit" variant="primary" disabled={saving || uploadingImage}>
+          {saving
+            ? 'Сохраняем…'
+            : uploadingImage
+              ? 'Ждём загрузку…'
+              : isEdit
+                ? 'Сохранить'
+                : 'Создать'}
         </Button>
         <Button type="button" variant="secondary" disabled={saving} onClick={onCancel}>
           Отмена
