@@ -12,6 +12,7 @@ import com.baganov.magicvetov.entity.PaymentMethod;
 import com.baganov.magicvetov.entity.Order;
 import com.baganov.magicvetov.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,7 +41,8 @@ import java.util.List;
 public class PaymentPollingService {
 
     private final PaymentRepository paymentRepository;
-    private final YooKassaPaymentService yooKassaPaymentService;
+    /** См. OrderService: бин условный, зависимость не должна быть обязательной. */
+    private final ObjectProvider<YooKassaPaymentService> yooKassaPaymentServiceProvider;
     private final AdminBotService adminBotService;
 
     /**
@@ -52,6 +54,14 @@ public class PaymentPollingService {
     @Transactional
     public void pollPendingPayments() {
         try {
+            // Оплата выключена флагом — опрашивать нечего и некого.
+            // Выходим молча (debug, не warn): иначе лог засорялся бы каждую
+            // минуту на окружениях без ЮKassa.
+            if (yooKassaPaymentServiceProvider.getIfAvailable() == null) {
+                log.debug("🔍 Опрос платежей пропущен: ЮKassa отключена");
+                return;
+            }
+
             // Время 10 минут назад - старше этого времени не опрашиваем
             LocalDateTime tenMinutesAgo = LocalDateTime.now().minus(10, ChronoUnit.MINUTES);
             
@@ -89,7 +99,7 @@ public class PaymentPollingService {
                 ChronoUnit.MINUTES.between(payment.getCreatedAt(), LocalDateTime.now()));
             
             // Запрашиваем актуальный статус из ЮКассы
-            var updatedPayment = yooKassaPaymentService.checkPaymentStatus(payment.getId());
+            var updatedPayment = yooKassaPaymentServiceProvider.getObject().checkPaymentStatus(payment.getId());
             
             // Получаем обновленный платеж из БД
             payment = paymentRepository.findById(payment.getId())

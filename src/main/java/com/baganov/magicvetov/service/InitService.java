@@ -8,6 +8,7 @@ import io.minio.MinioClient;
 import io.minio.Result;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -32,7 +33,17 @@ public class InitService {
 
     private final MinioClient minioClient;
     private final ProductRepository productRepository;
-    private final ImageUploader imageUploader;
+
+    /**
+     * Легаси-синхронизатор, по умолчанию ОТКЛЮЧЁН (дефект 3.7 плана).
+     *
+     * ObjectProvider, а не прямая зависимость: ImageUploader помечен
+     * @ConditionalOnProperty и в обычной конфигурации бина нет. С `private
+     * final ImageUploader` контекст в таком случае не поднимается вовсе —
+     * именно это уронило прод 2026-10-03 (APPLICATION FAILED TO START,
+     * «No qualifying bean of type ImageUploader»).
+     */
+    private final ObjectProvider<ImageUploader> imageUploaderProvider;
 
     @Value("${s3.bucket}")
     private String bucket;
@@ -61,8 +72,16 @@ public class InitService {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void onApplicationStartup() {
-        // Сначала синхронизируем данные о продуктах
-        imageUploader.syncProductData();
+        // Синхронизация выполняется только если легаси-режим включён явно
+        // (app.legacy.image-uploader.enabled=true). Иначе бина нет, и это
+        // нормально: syncProductData перезаписывает products.image_url по
+        // жёстко прошитой таблице имён пиццерии — ровно те поля, которые
+        // теперь правит админка.
+        ImageUploader imageUploader = imageUploaderProvider.getIfAvailable();
+        if (imageUploader != null) {
+            log.warn("Включён легаси-режим ImageUploader: products.image_url будет перезаписан");
+            imageUploader.syncProductData();
+        }
 
         // Затем проверяем состояние изображений в S3
         try {

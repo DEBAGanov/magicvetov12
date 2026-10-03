@@ -148,6 +148,7 @@ tasks.register('securityTest', Test) {
     useJUnitPlatform()
     filter {
         includeTestsMatching 'com.baganov.magicvetov.config.SecurityConfigRulesTest'
+        includeTestsMatching 'com.baganov.magicvetov.config.BeanWiringTest'
     }
     testLogging {
         events 'passed', 'failed', 'skipped'
@@ -180,6 +181,28 @@ tasks.register('uploadTest', Test) {
         events 'passed', 'failed', 'skipped'
         showStandardStreams = false
     }
+}
+
+/**
+ * Полная сборка контекста Spring (MagicCvetovApplicationTests.contextLoads).
+ *
+ * Эта проверка поймала бы падение прода 2026-10-03: отключённый бин
+ * ImageUploader был обязательной зависимостью InitService, и контекст не
+ * собирался. Компиляция такое не видит.
+ *
+ * ВАЖНО: задаче нужны живые MinIO/S3 и БД — локально без них она падает на
+ * ConnectException в MinioClientConfig. Запускать на стенде или в CI, где
+ * поднят docker compose. Статическую часть той же проверки, работающую без
+ * инфраструктуры, делает BeanWiringTest в составе securityTest.
+ */
+tasks.register('contextTest', Test) {
+    description = 'Пробует поднять контекст Spring (нужны MinIO и БД)'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter { includeTestsMatching 'com.baganov.magicvetov.MagicCvetovApplicationTests' }
+    testLogging { events 'passed', 'failed'; showStandardStreams = false }
 }
 
 tasks.named('bootRun') {

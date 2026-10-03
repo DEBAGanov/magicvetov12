@@ -9,6 +9,7 @@ import com.baganov.magicvetov.model.dto.payment.PaymentResponse;
 import com.baganov.magicvetov.entity.*;
 import com.baganov.magicvetov.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -49,7 +50,14 @@ public class OrderService {
     private final DeliveryLocationRepository deliveryLocationRepository;
     private final StorageService storageService;
     private final NotificationService notificationService;
-    private final YooKassaPaymentService yooKassaPaymentService;
+    /**
+     * ЮKassa включается флагом yookassa.enabled (по умолчанию false), поэтому
+     * бина может не быть. ObjectProvider вместо обязательной зависимости:
+     * иначе при незаданном YOOKASSA_ENABLED приложение не поднимется вовсе —
+     * тот же отказ, что уронил прод 2026-10-03 на ImageUploader.
+     * Зафиксировано тестом BeanWiringTest.
+     */
+    private final ObjectProvider<YooKassaPaymentService> yooKassaPaymentServiceProvider;
     private final TelegramBotService telegramBotService;
     private final TelegramUserNotificationService telegramUserNotificationService;
     private final ScheduledNotificationService scheduledNotificationService;
@@ -271,6 +279,14 @@ public class OrderService {
             paymentRequest.setAmount(order.getTotalAmount()); // Устанавливаем сумму заказа
             paymentRequest.setDescription(description);
             paymentRequest.setReturnUrl(siteUrl + "/orders/" + order.getId());
+
+            YooKassaPaymentService yooKassaPaymentService = yooKassaPaymentServiceProvider.getIfAvailable();
+            if (yooKassaPaymentService == null) {
+                // Поведение при включённой ЮKassa не меняется; этот случай —
+                // только когда оплата выключена флагом.
+                throw new IllegalStateException(
+                        "Оплата через ЮKassa отключена (yookassa.enabled=false)");
+            }
 
             PaymentResponse payment = yooKassaPaymentService.createPayment(paymentRequest);
 
