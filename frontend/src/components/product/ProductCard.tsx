@@ -69,7 +69,14 @@ export default function ProductCard({ product, priority = false }: { product: Pr
                   src={src}
                   alt={i === imgIndex ? product.name : ""}
                   fill
-                  sizes="(max-width: 768px) 50vw, 33vw"
+                  // Сетка каталога: 2 колонки на телефоне, 3 начиная с md,
+                  // ВНУТРИ контейнера шириной максимум 1280px.
+                  // Прежнее 33vw считалось от всего окна, и на широком экране
+                  // с Retina выходило ~1000px — Next отдавал вариант 1080px
+                  // для карточки, которая физически около 405px.
+                  // Последняя ветка (420px) закрывает случай, когда контейнер
+                  // упёрся в предел: 1280/3 − отступы ≈ 405px.
+                  sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 420px"
                   priority={i === 0 && priority}
                   loading={i === 0 && priority ? "eager" : "lazy"}
                   className="object-cover transition-opacity duration-300"
