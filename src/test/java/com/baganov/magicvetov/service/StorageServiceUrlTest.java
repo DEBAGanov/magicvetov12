@@ -116,6 +116,47 @@ class StorageServiceUrlTest {
                 .isEqualTo("https://s3.example/magicvetov/products/a/b.jpg");
     }
 
+    /**
+     * Инцидент 2026-10-03: расхождение public-url и bucket.
+     *
+     * В панели TIMEWEB_S3_BUCKET был правильный, а TIMEWEB_S3_PUBLIC_URL
+     * указывал на несуществующий бакет. Прежний код в prod просто склеивал
+     * public-url + ключ, то есть слепо доверял неверному значению, и все
+     * ссылки отдавали 404 при живых файлах.
+     *
+     * Теперь имя бакета берётся только из bucket.
+     */
+    @Test
+    @DisplayName("Бакет из public-url игнорируется: источник истины — bucket")
+    void bucketFromPublicUrlIsIgnored() {
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"dev"});
+        // public-url с ЧУЖИМ бакетом — ровно случай с прода
+        ReflectionTestUtils.setField(service, "devPublicUrl", "https://s3.example/magiacvetov12");
+
+        assertThat(service.resolvePublicUrl("products/x.jpg"))
+                .isEqualTo("https://s3.example/magicvetov/products/x.jpg");
+    }
+
+    @Test
+    @DisplayName("public-url с правильным бакетом не даёт его дублирования")
+    void bucketInPublicUrlIsNotDuplicated() {
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"dev"});
+        ReflectionTestUtils.setField(service, "devPublicUrl", "https://s3.example/magicvetov");
+
+        assertThat(service.resolvePublicUrl("products/x.jpg"))
+                .isEqualTo("https://s3.example/magicvetov/products/x.jpg");
+    }
+
+    @Test
+    @DisplayName("Завершающий слэш в public-url не ломает ссылку")
+    void trailingSlashHandled() {
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"dev"});
+        ReflectionTestUtils.setField(service, "devPublicUrl", "https://s3.example/");
+
+        assertThat(service.resolvePublicUrl("products/x.jpg"))
+                .isEqualTo("https://s3.example/magicvetov/products/x.jpg");
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"   "})

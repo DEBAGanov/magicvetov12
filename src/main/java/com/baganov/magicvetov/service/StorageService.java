@@ -55,8 +55,10 @@ public class StorageService {
         return isProd() ? prodPublicUrl : devPublicUrl;
     }
 
+    /** @deprecated дублирует getPublicUrl(String); оставлено для совместимости. */
+    @Deprecated
     public String getFullPublicUrl(String objectName) {
-        return getPublicUrl() + "/" + getBucket() + "/" + objectName;
+        return getPublicUrl(objectName);
     }
 
     private boolean isProd() {
@@ -170,22 +172,58 @@ public class StorageService {
     }
 
     /**
-     * Получение публичного URL для файла
+     * Получение публичного URL для файла.
+     *
+     * Имя бакета берётся ТОЛЬКО из bucket, даже если public-url его уже
+     * содержит. Иначе два источника расходятся — и это ровно то, что сломало
+     * картинки на проде 2026-10-03: TIMEWEB_S3_BUCKET в панели был
+     * правильный (f9c8e17a-magicvetov-products, видно в логе старта), а
+     * TIMEWEB_S3_PUBLIC_URL указывал на несуществующий бакет
+     * magiacvetov12 — и все ссылки отдавали 404 при живых файлах.
+     *
+     * Теперь из public-url берётся только адрес хранилища: если имя бакета
+     * в нём есть, оно отрезается и подставляется актуальное.
      */
     public String getPublicUrl(String objectName) {
-        String baseUrl = getPublicUrl();
-        String url;
-
-        if (isProd()) {
-            // Для prod окружения baseUrl уже содержит bucket name
-            url = baseUrl + "/" + objectName;
-        } else {
-            // Для dev окружения добавляем bucket name
-            url = baseUrl + "/" + getBucket() + "/" + objectName;
-        }
-
+        String url = storageBaseUrl() + "/" + getBucket() + "/" + objectName;
         log.debug("Generated public URL (isProd: {}): {}", isProd(), url);
         return url;
+    }
+
+    /**
+     * Адрес хранилища без имени бакета.
+     *
+     * Исторически в prod в public-url писали адрес ВМЕСТЕ с бакетом
+     * (https://s3.twcstorage.ru/f9c8e17a-magicvetov-products), а в dev — без.
+     * Поддерживаем оба вида: если последний сегмент совпадает с именем бакета
+     * или просто выглядит как имя бакета (не часть схемы), отрезаем его.
+     */
+    private String storageBaseUrl() {
+        String baseUrl = getPublicUrl();
+        if (baseUrl == null) {
+            return "";
+        }
+        baseUrl = baseUrl.replaceAll("/+$", "");
+
+        String bucket = getBucket();
+        if (bucket != null && baseUrl.endsWith("/" + bucket)) {
+            return baseUrl.substring(0, baseUrl.length() - bucket.length() - 1);
+        }
+
+        // Имя бакета в адресе не совпало с настроенным. Это и есть
+        // расхождение конфигурации: отрезаем «лишний» последний сегмент, если
+        // он не часть схемы (https://host), иначе ссылка указала бы в чужой
+        // бакет. Предупреждаем, чтобы причина была видна в логе сразу.
+        int lastSlash = baseUrl.lastIndexOf('/');
+        if (lastSlash > "https://".length()) {
+            String suspect = baseUrl.substring(lastSlash + 1);
+            log.warn("public-url содержит бакет «{}», а настроенный бакет — «{}». "
+                    + "Использую настроенный; проверьте TIMEWEB_S3_PUBLIC_URL и TIMEWEB_S3_BUCKET",
+                    suspect, bucket);
+            return baseUrl.substring(0, lastSlash);
+        }
+
+        return baseUrl;
     }
 
     /**
