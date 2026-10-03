@@ -203,17 +203,56 @@ public class StorageService {
         if (storedValue == null || storedValue.isBlank()) {
             return null;
         }
-        if (storedValue.startsWith("http://") || storedValue.startsWith("https://")) {
+
+        String key = toRelativeKey(storedValue);
+        if (key == null) {
+            // Не наш объект (внешний поставщик, CDN) — отдаём как есть.
             return storedValue;
         }
+
         try {
-            return getPublicUrl(storedValue);
+            return getPublicUrl(key);
         } catch (Exception e) {
             // Не роняем выдачу каталога из-за одной ссылки: лучше показать
             // сырое значение, чем отдать 500 на всю страницу.
             log.error("Не удалось собрать публичный URL для {}: {}", storedValue, e.getMessage());
             return storedValue;
         }
+    }
+
+    /**
+     * Вытаскивает относительный ключ из значения, пришедшего из БД.
+     *
+     * Зачем не просто «начинается с http — отдать как есть». На проде
+     * 2026-10-03 в базе обнаружились абсолютные URL с НЕВЕРНЫМ именем бакета:
+     *   https://s3.twcstorage.ru/magiacvetov12/products/<папка>/<файл>.webp
+     * при бакете f9c8e17a-magicvetov-products. Файлы в бакете есть, а по
+     * ссылке из БД — 404, и витрина показывала товары без картинок.
+     *
+     * Поэтому абсолютный URL, внутри которого видна НАША папка (products/ или
+     * categories/), считаем своим и пересобираем адрес из конфига. Так имя
+     * бакета живёт в одном месте, и расхождение данных с конфигом перестаёт
+     * ломать выдачу. Миграция V32 чистит сами данные, но код больше не
+     * зависит от того, выполнилась ли она.
+     *
+     * @return относительный ключ, либо null если это не наш объект
+     */
+    private String toRelativeKey(String storedValue) {
+        boolean absolute = storedValue.startsWith("http://") || storedValue.startsWith("https://");
+        if (!absolute) {
+            return storedValue;
+        }
+
+        // Слэши по обе стороны обязательны: имя бакета
+        // f9c8e17a-magicvetov-products само кончается на "products", и поиск
+        // без слэшей срезал бы URL по середине имени бакета.
+        for (String folder : new String[] { "/products/", "/categories/" }) {
+            int at = storedValue.indexOf(folder);
+            if (at >= 0) {
+                return storedValue.substring(at + 1);
+            }
+        }
+        return null;
     }
 
     /**

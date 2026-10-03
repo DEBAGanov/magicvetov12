@@ -59,14 +59,61 @@ class StorageServiceUrlTest {
                 .isEqualTo("https://s3.example/magicvetov/products/uuid.jpg");
     }
 
-    @ParameterizedTest(name = "{0} отдаётся как есть")
+    /**
+     * Главная проверка после инцидента 2026-10-03.
+     *
+     * В прод-БД лежали абсолютные URL с НЕВЕРНЫМ бакетом (magiacvetov12 —
+     * такого бакета не существует, проверено: 404; файлы только в
+     * f9c8e17a-magicvetov-products). Витрина отдавала их «как есть», и
+     * каталог показывал товары без картинок.
+     *
+     * Теперь адрес пересобирается из конфига, если внутри URL видна наша папка.
+     */
+    @ParameterizedTest(name = "{0} → пересобирается из конфига")
     @ValueSource(strings = {
-            "https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/x.webp",
-            "http://example.com/photo.jpg"
+            // Неверный бакет — тот самый случай с прода
+            "https://s3.twcstorage.ru/magiacvetov12/products/buket/buket_1.webp",
+            // Правильный бакет: результат тот же, префикс не дублируется
+            "https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/buket/buket_1.webp",
+            // Другой хост (например, переезд на CDN)
+            "https://cdn.example.com/whatever/products/buket/buket_1.webp"
     })
-    @DisplayName("Абсолютный URL не получает второй префикс")
-    void keepsAbsoluteUrlAsIs(String absolute) {
-        assertThat(service.resolvePublicUrl(absolute)).isEqualTo(absolute);
+    @DisplayName("Абсолютный URL с нашей папкой пересобирается с актуальным бакетом")
+    void rebuildsOurUrlsFromConfig(String stored) {
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"dev"});
+
+        assertThat(service.resolvePublicUrl(stored))
+                .isEqualTo("https://s3.example/magicvetov/products/buket/buket_1.webp");
+    }
+
+    @Test
+    @DisplayName("Картинка категории тоже пересобирается")
+    void rebuildsCategoryUrl() {
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"dev"});
+
+        assertThat(service.resolvePublicUrl(
+                "https://s3.twcstorage.ru/magiacvetov12/categories/rozy.jpg"))
+                .isEqualTo("https://s3.example/magicvetov/categories/rozy.jpg");
+    }
+
+    @Test
+    @DisplayName("Чужая ссылка без наших папок отдаётся как есть")
+    void keepsForeignUrlAsIs() {
+        // Внешний поставщик: это не наш объект, подменять адрес нельзя.
+        String foreign = "https://supplier.example/media/photo.jpg";
+        assertThat(service.resolvePublicUrl(foreign)).isEqualTo(foreign);
+    }
+
+    @Test
+    @DisplayName("Имя бакета, кончающееся на products, не ломает разбор")
+    void bucketNameEndingWithProductsIsNotConfused() {
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"dev"});
+
+        // Ловушка: без слэшей поиск «products» нашёл бы имя бакета
+        // (f9c8e17a-magicvetov-products) и срезал URL по его середине.
+        assertThat(service.resolvePublicUrl(
+                "https://s3.twcstorage.ru/f9c8e17a-magicvetov-products/products/a/b.jpg"))
+                .isEqualTo("https://s3.example/magicvetov/products/a/b.jpg");
     }
 
     @ParameterizedTest

@@ -35,27 +35,14 @@ public class CategoryService {
     }
 
     private CategoryDTO mapToDTO(Category category) {
-        String imageUrlWithPresignedUrl = null;
-        if (category.getImageUrl() != null && !category.getImageUrl().isEmpty()) {
-            try {
-                // Для изображений категорий используем простые публичные URL
-                if (category.getImageUrl().startsWith("categories/")) {
-                    imageUrlWithPresignedUrl = storageService.getPublicUrl(category.getImageUrl());
-                } else {
-                    // Если URL уже полный, используем как есть
-                    imageUrlWithPresignedUrl = category.getImageUrl();
-                }
-            } catch (Exception e) {
-                log.error("Failed to generate public URL for category image: {}", category.getImageUrl(), e);
-                imageUrlWithPresignedUrl = category.getImageUrl();
-            }
-        }
-
         return CategoryDTO.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .description(category.getDescription())
-                .imageUrl(imageUrlWithPresignedUrl)
+                // resolvePublicUrl вместо ручной проверки префикса: он чинит и
+                // абсолютные URL с неверным именем бакета (см. StorageService
+                // и миграцию V32).
+                .imageUrl(storageService.resolvePublicUrl(category.getImageUrl()))
                 .displayOrder(category.getDisplayOrder())
                 .build();
     }

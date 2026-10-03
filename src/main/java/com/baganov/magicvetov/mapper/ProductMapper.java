@@ -34,37 +34,22 @@ public class ProductMapper {
     }
 
     public ProductDto toDto(Product entity) {
-        String imageUrl = null;
-        if (entity.getImageUrl() != null && !entity.getImageUrl().isEmpty()) {
-            try {
-                // Для изображений продуктов используем простые публичные URL
-                if (entity.getImageUrl().startsWith("products/")) {
-                    imageUrl = storageService.getPublicUrl(entity.getImageUrl());
-                } else {
-                    // Если URL уже полный, используем как есть
-                    imageUrl = entity.getImageUrl();
-                }
-            } catch (Exception e) {
-                log.error("Error generating public URL for product image", e);
-                imageUrl = entity.getImageUrl();
-            }
-        }
+        // resolvePublicUrl вместо проверки startsWith("products/") вручную.
+        //
+        // Прежняя логика отдавала любой абсолютный URL «как есть», и на проде
+        // 2026-10-03 это означало отдачу ссылок с НЕВЕРНЫМ бакетом
+        // (magiacvetov12 вместо f9c8e17a-magicvetov-products): файлы в бакете
+        // есть, а по ссылке 404 — товары на витрине были без картинок.
+        // resolvePublicUrl распознаёт нашу папку внутри URL и пересобирает
+        // адрес из конфига, поэтому имя бакета живёт в одном месте.
+        String imageUrl = storageService.resolvePublicUrl(entity.getImageUrl());
 
         // Маппинг дополнительных изображений
         List<String> additionalImages = null;
         if (entity.getAdditionalImages() != null && !entity.getAdditionalImages().isEmpty()) {
             additionalImages = entity.getAdditionalImages().stream()
-                    .map(img -> {
-                        if (img.getImageUrl() != null && img.getImageUrl().startsWith("products/")) {
-                            try {
-                                return storageService.getPublicUrl(img.getImageUrl());
-                            } catch (Exception e) {
-                                log.error("Error generating URL for additional image", e);
-                                return img.getImageUrl();
-                            }
-                        }
-                        return img.getImageUrl();
-                    })
+                    .map(img -> storageService.resolvePublicUrl(img.getImageUrl()))
+                    .filter(java.util.Objects::nonNull)
                     .collect(Collectors.toList());
         }
 

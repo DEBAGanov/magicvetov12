@@ -32,6 +32,8 @@ public class FeedService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    /** Собирает публичные URL картинок — единственное место, знающее про бакет. */
+    private final StorageService storageService;
 
     @Value("${app.base-url:https://api.magiacvetov12.ru}")
     private String baseUrl;
@@ -463,11 +465,14 @@ public class FeedService {
         if (imageUrl == null || imageUrl.isEmpty()) {
             return "";
         }
-        if (imageUrl.startsWith("http")) {
-            return imageUrl;
-        }
-        String s3BaseUrl = "https://s3.twcstorage.ru/f9c8e17a-magicvetov-products";
-        return s3BaseUrl + (imageUrl.startsWith("/") ? "" : "/") + imageUrl;
+        // Через StorageService, а не своей склейкой с прошитым адресом бакета.
+        //
+        // Было: абсолютный URL возвращался «как есть», а имя бакета дублировалось
+        // строкой в коде. На проде 2026-10-03 в БД оказались URL с НЕВЕРНЫМ
+        // бакетом (magiacvetov12), и в фиды для Яндекс.Маркета уходили ссылки,
+        // отдающие 404 — то есть карточки товаров были без картинок и там.
+        String resolved = storageService.resolvePublicUrl(imageUrl);
+        return resolved != null ? resolved : "";
     }
 
     /**
