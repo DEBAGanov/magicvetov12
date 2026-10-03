@@ -197,9 +197,11 @@ export function ImageGallery({
           type="file"
           accept="image/jpeg,image/png,image/webp"
           multiple
-          // capture="environment" — на телефоне открывает камеру: владелец
-          // магазина фотографирует букет и сразу загружает.
-          capture="environment"
+          // Атрибут capture здесь НЕ нужен. С capture="environment" телефон
+          // открывал камеру сразу, минуя выбор, и загрузить уже снятое фото из
+          // галереи было невозможно. Без него Android и iOS сами показывают
+          // меню «Камера / Галерея / Файлы» — сфотографировать по-прежнему
+          // можно, но это выбор владельца, а не навязанный путь.
           onChange={handleSelect}
           disabled={disabled || full}
           className="hidden"

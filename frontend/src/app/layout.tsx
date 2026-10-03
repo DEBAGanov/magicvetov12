@@ -13,6 +13,7 @@ import MobileNav from "@/components/layout/MobileNav";
 import { ToastProvider } from "@/components/ui/Toast";
 import Analytics from "@/components/Analytics";
 import MaxBotPopup from "@/components/MaxBotPopup";
+import { StorefrontChrome } from "@/components/layout/StorefrontChrome";
 import "./globals.css";
 
 const mulish = Mulish({
@@ -94,11 +95,18 @@ export default function RootLayout({
     <html lang="ru" className={mulish.variable}>
       <body className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
         <ToastProvider>
-          <Header />
+          {/* Шапка, футер и нижняя панель — только для витрины. В админке свой
+              каркас (AdminShell), и витринный поверх него мешал: на телефоне
+              получались две нижние панели одна поверх другой. */}
+          <StorefrontChrome>
+            <Header />
+          </StorefrontChrome>
           <main className="flex-1">{children}</main>
-          <Footer />
-          <MobileNav />
-          <MaxBotPopup />
+          <StorefrontChrome>
+            <Footer />
+            <MobileNav />
+            <MaxBotPopup />
+          </StorefrontChrome>
           <Analytics />
         </ToastProvider>
       </body>

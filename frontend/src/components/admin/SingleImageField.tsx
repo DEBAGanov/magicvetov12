@@ -77,7 +77,8 @@ export function SingleImageField({
         ref={inputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        capture="environment"
+        // capture не указываем: иначе телефон открывает камеру сразу и не даёт
+        // выбрать готовое фото из галереи. Подробнее — в ImageGallery.
         onChange={(event) => {
           const file = event.target.files?.[0]
           if (file) void upload(file)
