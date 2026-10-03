@@ -52,18 +52,30 @@ public class AdminController {
      * Если фронт записывал её в imageUrl, картинка отваливалась через час
      * (дефект 3.2 плана).
      *
-     * Параметр type убран: единственный принимаемый тип — изображение товара.
-     * Он позволял админу задать произвольный префикс в бакете, то есть писать
-     * куда угодно, а проверки на допустимые значения не было.
+     * Параметр type принимает только "products" или "categories". Раньше он
+     * задавал префикс в бакете без всякой проверки — то есть позволял писать по
+     * любому пути; теперь это закрытый список в ImageUploadService.
      */
     @PostMapping("/upload")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Загрузка изображения товара", description = "Проверяет формат и сигнатуру, сжимает до 1600 px и конвертирует в WebP. Возвращает ключ объекта и постоянный публичный URL.")
+    @Operation(summary = "Загрузка изображения", description = "Проверяет формат и сигнатуру, сжимает до 1600 px. Возвращает ключ объекта и постоянный публичный URL.")
     public ResponseEntity<Map<String, String>> uploadImage(
-            @Parameter(description = "Файл изображения (jpg, png, webp), до 5 МБ", required = true) @RequestParam("file") MultipartFile file) {
+            @Parameter(description = "Файл изображения (jpg, png, webp), до 5 МБ", required = true) @RequestParam("file") MultipartFile file,
+            @Parameter(description = "Раздел: products или categories") @RequestParam(defaultValue = ImageUploadService.PRODUCTS_PREFIX) String type) {
 
-        log.info("Загрузка изображения товара, исходное имя: {}", file.getOriginalFilename());
-        String objectName = imageUploadService.uploadProductImage(file);
+        log.info("Загрузка изображения ({}), исходное имя: {}", type, file.getOriginalFilename());
+
+        // Неизвестный type отклоняем, а не считаем товаром: опечатка в запросе
+        // иначе положила бы картинку категории в папку товаров, и это
+        // обнаружилось бы только при чистке бакета.
+        String objectName;
+        if (ImageUploadService.CATEGORIES_PREFIX.equals(type)) {
+            objectName = imageUploadService.uploadCategoryImage(file);
+        } else if (ImageUploadService.PRODUCTS_PREFIX.equals(type)) {
+            objectName = imageUploadService.uploadProductImage(file);
+        } else {
+            throw new InvalidImageException("Недопустимый раздел: " + type);
+        }
 
         Map<String, String> response = new HashMap<>();
         response.put("objectName", objectName);
@@ -93,7 +105,7 @@ public class AdminController {
     public ResponseEntity<Void> deleteUploadedImage(
             @Parameter(description = "Ключ объекта, полученный при загрузке", required = true) @RequestParam("objectName") String objectName) {
 
-        if (objectName == null || !objectName.startsWith(ImageUploadService.PRODUCTS_PREFIX + "/")) {
+        if (!ImageUploadService.isAllowedKey(objectName)) {
             throw new InvalidImageException("Недопустимый ключ объекта");
         }
 

@@ -16,13 +16,14 @@
  */
 'use client'
 
-import type { CategoryDTO } from '@/lib/types'
 import type {
+  AdminCategoryDTO,
   AdminLoginResult,
   AdminProductDTO,
   AdminProductPage,
   AdminStats,
   CreateProductBody,
+  SaveCategoryBody,
   UpdateProductBody,
   UploadResult,
 } from './types'
@@ -238,13 +239,43 @@ export const adminApi = {
   /** Сводка для дашборда. */
   stats: () => request<AdminStats>('/admin/stats'),
 
-  /**
-   * Категории для выпадающего списка в форме.
-   *
-   * Берём публичную ручку витрины: она открыта на GET, отдаёт ровно то, что
-   * нужно, и отдельный админский эндпоинт здесь ничего не добавил бы.
-   */
-  categories: () => request<CategoryDTO[]>('/categories'),
+  categories: {
+    /**
+     * Все категории, включая отключённые, с числом товаров.
+     *
+     * Для выпадающего списка в форме товара тоже берём этот, а не витринный
+     * /categories: иначе товар нельзя было бы положить в отключённую
+     * категорию — а именно так и готовят раздел к публикации.
+     */
+    list: () => request<AdminCategoryDTO[]>('/admin/categories'),
+
+    get: (id: number) => request<AdminCategoryDTO>(`/admin/categories/${id}`),
+
+    create: (body: SaveCategoryBody) =>
+      request<AdminCategoryDTO>('/admin/categories', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    update: (id: number, body: SaveCategoryBody) =>
+      request<AdminCategoryDTO>(`/admin/categories/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }),
+
+    /**
+     * Поменять две категории местами в порядке показа.
+     *
+     * Отдельная ручка, а не два update: тот принимает полное состояние
+     * категории и перезаписывает описание, так что «только переставить» через
+     * него стёрло бы описания.
+     */
+    swapOrder: (id: number, otherId: number) =>
+      request<void>(`/admin/categories/${id}/swap-order/${otherId}`, { method: 'POST' }),
+
+    /** Непустая категория не удалится: вернётся 409 с объяснением. */
+    remove: (id: number) => request<void>(`/admin/categories/${id}`, { method: 'DELETE' }),
+  },
 }
 
 // ---------- Файлы ----------
@@ -259,10 +290,14 @@ export const adminApi = {
 export function uploadImage(
   file: File,
   onProgress?: (percent: number) => void,
+  type: 'products' | 'categories' = 'products',
 ): Promise<UploadResult> {
   return new Promise((resolve, reject) => {
     const form = new FormData()
     form.append('file', file)
+    // Определяет папку в бакете. Бэкенд принимает только эти два значения и
+    // отклоняет остальное, а не молча кладёт в products.
+    form.append('type', type)
 
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `${baseUrl()}/api/v1/admin/upload`)

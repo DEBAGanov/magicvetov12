@@ -15,8 +15,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { AdminApiError, adminApi } from '@/lib/admin/api'
-import type { AdminProductDTO, UpdateProductBody } from '@/lib/admin/types'
-import type { CategoryDTO } from '@/lib/types'
+import type { AdminCategoryDTO, AdminProductDTO, UpdateProductBody } from '@/lib/admin/types'
 import { ImageGallery, type GalleryItem } from './ImageGallery'
 import {
   Button,
@@ -86,15 +85,15 @@ export function ProductForm({ product }: { product?: AdminProductDTO }) {
     return [...main, ...(product.additionalImages ?? [])]
   })
 
-  const [categories, setCategories] = useState<CategoryDTO[]>([])
+  const [categories, setCategories] = useState<AdminCategoryDTO[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const summaryRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    adminApi
-      .categories()
+    adminApi.categories
+      .list()
       .then(setCategories)
       .catch(() => setSaveError('Не удалось загрузить категории — выбрать категорию не получится'))
   }, [])

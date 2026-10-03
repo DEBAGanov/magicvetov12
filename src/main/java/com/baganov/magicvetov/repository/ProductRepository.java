@@ -56,4 +56,14 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
         @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.additionalImages WHERE p.isAvailable = true")
         List<Product> findAllAvailableWithImages();
+
+        /**
+         * Сколько товаров в категории.
+         *
+         * Нужно для админки категорий: показать счётчик и не дать удалить
+         * непустую категорию. У Category.products стоит cascade = ALL и
+         * orphanRemoval = true, поэтому удаление категории унесло бы с собой
+         * все её товары вместе с ссылками на файлы в бакете.
+         */
+        long countByCategoryId(Integer categoryId);
 }

@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 const NAV = [
   { href: '/admin', label: 'Сводка', exact: true },
   { href: '/admin/products', label: 'Товары' },
+  { href: '/admin/categories', label: 'Категории' },
 ]
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

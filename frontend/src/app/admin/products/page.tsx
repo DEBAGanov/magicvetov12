@@ -14,8 +14,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { AdminApiError, adminApi } from '@/lib/admin/api'
-import type { AdminProductDTO, AdminProductPage } from '@/lib/admin/types'
-import type { CategoryDTO } from '@/lib/types'
+import type { AdminCategoryDTO, AdminProductDTO, AdminProductPage } from '@/lib/admin/types'
 import { AdminShell } from '@/components/admin/AdminShell'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import {
@@ -45,7 +44,7 @@ function ProductList() {
   const [query, setQuery] = useState('')
   const [categoryId, setCategoryId] = useState<number | undefined>()
   const [data, setData] = useState<AdminProductPage | null>(null)
-  const [categories, setCategories] = useState<CategoryDTO[]>([])
+  const [categories, setCategories] = useState<AdminCategoryDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [toDelete, setToDelete] = useState<AdminProductDTO | null>(null)
@@ -70,7 +69,7 @@ function ProductList() {
   }, [load, query])
 
   useEffect(() => {
-    adminApi.categories().then(setCategories).catch(() => {
+    adminApi.categories.list().then(setCategories).catch(() => {
       // Фильтр — не главное на экране: без категорий список всё равно работает.
       setCategories([])
     })

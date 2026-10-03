@@ -86,6 +86,35 @@ export interface UpdateProductBody {
 
 export type CreateProductBody = UpdateProductBody
 
+/** Категория в админском API. */
+export interface AdminCategoryDTO {
+  id: number
+  name: string
+  description: string | null
+  /** Готовая ссылка для превью. */
+  imageUrl: string | null
+  /** Ключ объекта (categories/uuid.jpg) — его отправляет форма. */
+  imageKey: string | null
+  displayOrder: number
+  isActive: boolean
+  /** Сколько товаров внутри. Непустую категорию удалить нельзя. */
+  productCount: number
+}
+
+/**
+ * Тело запроса на сохранение категории.
+ *
+ * imageKey различает три состояния, как и у товара:
+ *   undefined — не менять, '' — снять картинку, ключ — поставить новую.
+ */
+export interface SaveCategoryBody {
+  name: string
+  description?: string | null
+  imageKey?: string
+  displayOrder?: number | null
+  isActive?: boolean
+}
+
 /** Ответ POST /api/v1/admin/upload. */
 export interface UploadResult {
   /** Ключ в бакете — сохраняем в форме и отправляем с товаром. */

@@ -44,6 +44,26 @@ public class ImageUploadService {
     /** Куда в бакете складываем картинки товаров. */
     public static final String PRODUCTS_PREFIX = "products";
 
+    /** Куда складываем картинки категорий. */
+    public static final String CATEGORIES_PREFIX = "categories";
+
+    /**
+     * Допустимые префиксы — закрытый список.
+     *
+     * Префикс приходит из запроса, и без проверки админ (или тот, кто получил
+     * его токен) мог бы записать файл по любому пути в бакете и удалить объект
+     * по любому ключу через DELETE /admin/upload.
+     */
+    private static final Set<String> ALLOWED_PREFIXES = Set.of(PRODUCTS_PREFIX, CATEGORIES_PREFIX);
+
+    /** Проверяет, что ключ лежит в одной из наших папок. */
+    public static boolean isAllowedKey(String objectName) {
+        if (objectName == null) {
+            return false;
+        }
+        return ALLOWED_PREFIXES.stream().anyMatch(prefix -> objectName.startsWith(prefix + "/"));
+    }
+
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
 
     /**
@@ -75,6 +95,21 @@ public class ImageUploadService {
      *         бакета или CDN не требовал UPDATE по всем товарам.
      */
     public String uploadProductImage(MultipartFile file) {
+        return uploadImage(file, PRODUCTS_PREFIX);
+    }
+
+    /**
+     * То же для картинки категории — отличается только папкой в бакете.
+     */
+    public String uploadCategoryImage(MultipartFile file) {
+        return uploadImage(file, CATEGORIES_PREFIX);
+    }
+
+    private String uploadImage(MultipartFile file, String prefix) {
+        if (!ALLOWED_PREFIXES.contains(prefix)) {
+            throw new InvalidImageException("Недопустимый раздел для загрузки");
+        }
+
         validate(file);
 
         byte[] original = read(file);
@@ -86,12 +121,12 @@ public class ImageUploadService {
         }
 
         byte[] prepared = resizeAndEncode(original, detected);
-        String objectName = PRODUCTS_PREFIX + "/" + java.util.UUID.randomUUID() + OUTPUT_EXTENSION;
+        String objectName = prefix + "/" + java.util.UUID.randomUUID() + OUTPUT_EXTENSION;
 
         storageService.uploadFile(
                 new ByteArrayInputStream(prepared), objectName, OUTPUT_CONTENT_TYPE, prepared.length);
 
-        log.info("Загружено изображение товара {} ({} КБ из {} КБ, исходный формат {})",
+        log.info("Загружено изображение {} ({} КБ из {} КБ, исходный формат {})",
                 objectName, prepared.length / 1024, original.length / 1024, detected);
         return objectName;
     }

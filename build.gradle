@@ -173,6 +173,8 @@ tasks.register('uploadTest', Test) {
         includeTestsMatching 'com.baganov.magicvetov.service.ImageUploadServiceTest'
         includeTestsMatching 'com.baganov.magicvetov.service.AdminProductServiceTest'
         includeTestsMatching 'com.baganov.magicvetov.service.StorageServiceUrlTest'
+        includeTestsMatching 'com.baganov.magicvetov.service.AdminCategoryServiceTest'
+        includeTestsMatching 'com.baganov.magicvetov.model.dto.AdminDtoSerializationTest'
     }
     testLogging {
         events 'passed', 'failed', 'skipped'

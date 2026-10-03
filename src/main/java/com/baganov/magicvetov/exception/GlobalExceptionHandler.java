@@ -124,6 +124,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Действие невозможно в текущем состоянии данных.
+     *
+     * 409 Conflict, а не 500: сервер работает правильно, просто операция
+     * противоречит состоянию — например, удаление категории, в которой есть
+     * товары. Сообщение объясняет, что сделать, и показывается админу как есть.
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
+        log.warn("Операция невозможна: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    /**
      * Файл не прошёл проверку: формат, размер или сигнатура.
      *
      * 400, а не 500: виноват запрос, и сообщение можно показать админу прямо в
